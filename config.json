@@ -1,0 +1,6 @@
+{
+  "sync_before_reset": false,
+  "sync_after_reset": false,
+  "force_after": false,
+  "skip_reset_notification": false
+}

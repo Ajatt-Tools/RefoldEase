@@ -46,10 +46,12 @@ Config option combinations (set them below):
 # Configuration
 ######################################################################
 
-sync_before_reset = False
-sync_after_reset = False
-force_after = False
-skip_reset_notification = False
+config = mw.addonManager.getConfig(__name__)
+
+sync_before_reset: bool = config['sync_before_reset'] if 'sync_before_reset' in config else False
+sync_after_reset: bool = config['sync_after_reset'] if 'sync_after_reset' in config else False
+force_after: bool = config['force_after'] if 'force_after' in config else False
+skip_reset_notification: bool = config['skip_reset_notification'] if 'skip_reset_notification' in config else False
 
 
 ######################################################################
