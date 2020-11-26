@@ -57,9 +57,8 @@ update_option_groups: bool = config['update_option_groups'] if 'update_option_gr
 
 
 ######################################################################
-# Reset ease
+# Reset ease & other utils
 ######################################################################
-
 
 def resetEase(ez_factor_human: int = 250):
     ez_factor_anki = ez_factor_human * 10
@@ -87,6 +86,30 @@ def resetEase(ez_factor_human: int = 250):
     # sync after resetting ease if enabled
     if sync_after_reset:
         mw.onSync()
+
+
+def adjustIM(new_ease: int, base_im: int = 100) -> int:
+    default_ease = 250
+    return int(default_ease * base_im / new_ease)
+
+
+def updateGroupSettings(group_id: int, new_starting_ease: int, new_interval_modifier: int) -> None:
+    dconf = mw.col.decks.get_config(group_id)
+
+    # default = `2500`, LowKey target will be `1300`
+    dconf['new']['initialFactor'] = int(new_starting_ease * 10)
+
+    # default is `1.0`, LowKey target will be `1.92`
+    dconf['rev']['ivlFct'] = float(new_interval_modifier / 100)
+
+    mw.col.decks.setConf(dconf, group_id)
+    print(f"Updated Option Group: {dconf['name']}.")
+
+
+def updateGroups(new_starting_ease: int, new_interval_modifier: int) -> None:
+    dconfs = mw.col.decks.all_config()
+    for dconf in dconfs:
+        updateGroupSettings(dconf['id'], new_starting_ease, new_interval_modifier)
 
 
 # format menu item based on configuration
@@ -166,29 +189,9 @@ class DialogUI(QDialog):
         return hbox
 
 
-def adjustIM(new_ease: int, base_im: int = 100) -> int:
-    default_ease = 250
-    return int(default_ease * base_im / new_ease)
-
-
-def updateGroupSettings(group_id: int, new_starting_ease: int, new_interval_modifier: int) -> None:
-    dconf = mw.col.decks.get_config(group_id)
-
-    # default = `2500`, LowKey target will be `1300`
-    dconf['new']['initialFactor'] = int(new_starting_ease * 10)
-
-    # default is `1.0`, LowKey target will be `1.92`
-    dconf['rev']['ivlFct'] = float(new_interval_modifier / 100)
-
-    mw.col.decks.setConf(dconf, group_id)
-    print(f"Updated Option Group: {dconf['name']}.")
-
-
-def updateGroups(new_starting_ease: int, new_interval_modifier: int) -> None:
-    dconfs = mw.col.decks.all_config()
-    for dconf in dconfs:
-        updateGroupSettings(dconf['id'], new_starting_ease, new_interval_modifier)
-
+######################################################################
+# The addon's window
+######################################################################
 
 class ResetEaseWindow(DialogUI):
     def __init__(self):
