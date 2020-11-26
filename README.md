@@ -23,7 +23,8 @@ The other use concerns using Anki on mobile devices.
 Check the `Force sync in one direction` checkbox if you notice
 that the updated ease values aren't getting pushed from desktop to AnkiWeb.
 
-[Learn more](https://refold.la/roadmap/stage-1/a/anki-setup/) about how to set up Anki.
+[Learn more](https://refold.la/roadmap/stage-1/a/anki-setup/)
+about how to adjust Anki settings to suit language learning.
 
 ## Installation
 Install from [AnkiWeb](https://ankiweb.net/shared/info/819023663), or manually with `git`:
