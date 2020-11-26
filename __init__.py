@@ -60,24 +60,13 @@ update_option_groups: bool = config['update_option_groups'] if 'update_option_gr
 # Reset ease & other utils
 ######################################################################
 
-def resetEase(ez_factor_human: int = 250):
-    ez_factor_anki = ez_factor_human * 10
-
+def syncBefore():
     # sync before resetting ease, if enabled
     if sync_before_reset:
         mw.onSync()
 
-    # reset ease
-    mw.col.db.execute("update cards set factor = ?", ez_factor_anki)
 
-    # show a message box
-    if not skip_reset_notification:
-        msg = f"Ease has been reset to {ez_factor_human}%."
-        if sync_after_reset:
-            msg += f"\nCollection will be synchronized{' in one direction' if force_after else ''}."
-        msg += "\nDon't forget to check your Interval Modifier and Starting Ease."
-        showInfo(msg)
-
+def syncAfter():
     # force a one-way sync if enabled
     if force_after:
         mw.col.scm += 1
@@ -88,28 +77,43 @@ def resetEase(ez_factor_human: int = 250):
         mw.onSync()
 
 
+def notify(ez_factor_human: int):
+    # show a message box
+    if not skip_reset_notification:
+        msg = f"Ease has been reset to {ez_factor_human}%."
+        if sync_after_reset:
+            msg += f"\nCollection will be synchronized{' in one direction' if force_after else ''}."
+        msg += "\nDon't forget to check your Interval Modifier and Starting Ease."
+        showInfo(msg)
+
+
+def resetEase(ez_factor_human: int = 250):
+    ez_factor_anki = ez_factor_human * 10
+    mw.col.db.execute("update cards set factor = ?", ez_factor_anki)
+
+
 def adjustIM(new_ease: int, base_im: int = 100) -> int:
     default_ease = 250
     return int(default_ease * base_im / new_ease)
 
 
-def updateGroupSettings(group_id: int, new_starting_ease: int, new_interval_modifier: int) -> None:
-    dconf = mw.col.decks.get_config(group_id)
-
-    # default = `2500`, LowKey target will be `1300`
-    dconf['new']['initialFactor'] = int(new_starting_ease * 10)
-
-    # default is `1.0`, LowKey target will be `1.92`
-    dconf['rev']['ivlFct'] = float(new_interval_modifier / 100)
-
-    mw.col.decks.setConf(dconf, group_id)
-    print(f"Updated Option Group: {dconf['name']}.")
-
-
 def updateGroups(new_starting_ease: int, new_interval_modifier: int) -> None:
     dconfs = mw.col.decks.all_config()
+
+    def updateGroupSettings(group_id: int) -> None:
+        group_conf = mw.col.decks.get_config(group_id)
+
+        # default = `2500`, LowKey target will be `1300`
+        group_conf['new']['initialFactor'] = int(new_starting_ease * 10)
+
+        # default is `1.0`, LowKey target will be `1.92`
+        group_conf['rev']['ivlFct'] = float(new_interval_modifier / 100)
+
+        mw.col.decks.setConf(group_conf, group_id)
+        print(f"Updated Option Group: {group_conf['name']}.")
+
     for dconf in dconfs:
-        updateGroupSettings(dconf['id'], new_starting_ease, new_interval_modifier)
+        updateGroupSettings(dconf['id'])
 
 
 # format menu item based on configuration
@@ -232,13 +236,21 @@ class ResetEaseWindow(DialogUI):
     def updateImSpinBox(self):
         self.imSpinBox.setValue(adjustIM(self.easeSpinBox.value(), self.defaultEaseImSpinBox.value()))
 
+    def updateGroups(self):
+        if self.updateGroupsCheckBox.isChecked():
+            updateGroups(self.easeSpinBox.value(), self.imSpinBox.value())
+
     def onConfirm(self):
         global sync_after_reset, force_after
         sync_after_reset = self.syncCheckBox.isChecked()
         force_after = self.forceSyncCheckBox.isChecked()
+
+        syncBefore()
         resetEase(self.easeSpinBox.value())
-        if self.updateGroupsCheckBox.isChecked():
-            updateGroups(self.easeSpinBox.value(), self.imSpinBox.value())
+        self.updateGroups()
+        notify(self.easeSpinBox.value())
+        syncAfter()
+
         self.close()
 
 
