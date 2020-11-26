@@ -74,6 +74,7 @@ def resetEase(ez_factor_human: int = 250):
         msg = f"Ease has been reset to {ez_factor_human}%."
         if sync_after_reset:
             msg += f"\nCollection will be synchronized{' in one direction' if force_after else ''}."
+        msg += "\nDon't forget to update your Interval Modifier and Starting Ease."
         showInfo(msg)
 
     # force a one-way sync if enabled
@@ -122,15 +123,15 @@ class DialogUI(QDialog):
     def createEaseGroup(self):
         grid = QGridLayout()
 
-        grid.addWidget(QLabel("IM at Ease=250%:"), 1, 0)
+        grid.addWidget(QLabel("Your IM at Ease=250%:"), 1, 0)
         grid.addWidget(self.defaultEaseImSpinBox, 1, 1)
         grid.addWidget(QLabel("%"), 1, 2)
 
-        grid.addWidget(QLabel("Desired Ease:"), 2, 0)
+        grid.addWidget(QLabel("Desired new Ease:"), 2, 0)
         grid.addWidget(self.easeSpinBox, 2, 1)
         grid.addWidget(QLabel("%"), 2, 2)
 
-        grid.addWidget(QLabel("Recommended IM:"), 3, 0)
+        grid.addWidget(QLabel("Recommended IM after refold:"), 3, 0)
         grid.addWidget(self.imSpinBox, 3, 1)
         grid.addWidget(QLabel("%"), 3, 2)
 
