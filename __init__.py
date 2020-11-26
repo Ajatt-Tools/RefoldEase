@@ -76,12 +76,13 @@ def resetEase(ez_factor_human: int = 250):
             msg += f"\nCollection will be synchronized{' in one direction' if force_after else ''}."
         showInfo(msg)
 
+    # force a one-way sync if enabled
+    if force_after:
+        mw.col.scm += 1
+        mw.col.setMod()
+
     # sync after resetting ease if enabled
     if sync_after_reset:
-        # force a one-way sync if enabled
-        if force_after:
-            mw.col.scm += 1
-            mw.col.setMod()
         mw.onSync()
 
 
