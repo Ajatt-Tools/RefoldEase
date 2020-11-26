@@ -108,6 +108,7 @@ class DialogUI(QDialog):
         self.defaultEaseImSpinBox = QSpinBox()
         self.syncCheckBox = QCheckBox("Sync immediately")
         self.forceSyncCheckBox = QCheckBox("Force sync in one direction")
+        self.updateGroupsCheckBox = QCheckBox("Update Option Groups")
         self.okButton = QPushButton("Ok")
         self.cancelButton = QPushButton("Cancel")
         self._setupUI()
@@ -147,6 +148,7 @@ class DialogUI(QDialog):
         vbox = QVBoxLayout()
         vbox.addWidget(self.syncCheckBox)
         vbox.addWidget(self.forceSyncCheckBox)
+        vbox.addWidget(self.updateGroupsCheckBox)
         return vbox
 
     @staticmethod
@@ -230,7 +232,8 @@ class ResetEaseWindow(DialogUI):
         sync_after_reset = self.syncCheckBox.isChecked()
         force_after = self.forceSyncCheckBox.isChecked()
         resetEase(self.easeSpinBox.value())
-        updateGroups(self.easeSpinBox.value(), self.imSpinBox.value())
+        if self.updateGroupsCheckBox.isChecked():
+            updateGroups(self.easeSpinBox.value(), self.imSpinBox.value())
         self.close()
 
 
