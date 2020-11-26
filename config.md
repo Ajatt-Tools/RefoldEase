@@ -4,7 +4,7 @@
 
 * `sync_before_reset` - If you would like to sync your Anki collection with an AnkiWeb account
 before changing the Ease factors of your cards.
-* `sync_after_reset` - Whether to sync your Anki collection after changing the Ease.
+* `sync_after_reset` - Sync your Anki collection after changing the Ease.
 * `force_after` - Force changes in one direction on next sync.
 Set to `true` if you notice that the updated ease values aren't
 getting pushed from desktop to AnkiWeb.

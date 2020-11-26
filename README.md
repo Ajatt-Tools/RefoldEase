@@ -17,7 +17,7 @@ You can run the add-on by going to `Tools -> Refold Ease`.
 
 There are two uses for this add-on.
 The first is to undo damage that was caused by overusing the "hard" button
-prior to adopting the Low-Key Anki setup.
+prior to adopting the [Low-Key Anki](https://massimmersionapproach.com/table-of-contents/anki/low-key-anki/intro) setup.
 In other words, to swiftly escape from "ease hell."
 The other use concerns using Anki on mobile devices.
 Check the `Force sync in one direction` checkbox if you notice
