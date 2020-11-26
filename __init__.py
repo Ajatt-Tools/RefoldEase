@@ -121,6 +121,7 @@ class DialogUI(QDialog):
         vbox.addLayout(self.createEaseGroup())
         vbox.addLayout(self.createCheckBoxGroup())
         vbox.addStretch(1)
+        vbox.addWidget(self.createLearnMoreLink())
         vbox.addLayout(self.createBottomGroup())
         return vbox
 
@@ -146,6 +147,12 @@ class DialogUI(QDialog):
         vbox.addWidget(self.syncCheckBox)
         vbox.addWidget(self.forceSyncCheckBox)
         return vbox
+
+    @staticmethod
+    def createLearnMoreLink():
+        label = QLabel('<a href="https://refold.la/roadmap/stage-1/a/anki-setup">Learn more</a>')
+        label.setOpenExternalLinks(True)
+        return label
 
     def createBottomGroup(self):
         hbox = QHBoxLayout()
