@@ -195,6 +195,10 @@ class ResetEaseWindow(DialogUI):
     def connectUIElements(self):
         self.defaultEaseImSpinBox.editingFinished.connect(self.updateImSpinBox)
         self.easeSpinBox.editingFinished.connect(self.updateImSpinBox)
+
+        self.defaultEaseImSpinBox.valueChanged.connect(self.updateImSpinBox)
+        self.easeSpinBox.valueChanged.connect(self.updateImSpinBox)
+
         self.okButton.clicked.connect(self.onConfirm)
         self.cancelButton.clicked.connect(self.close)
 
