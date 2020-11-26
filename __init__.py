@@ -168,6 +168,25 @@ def adjustIM(new_ease: int, base_im: int = 100) -> int:
     return int(default_ease * base_im / new_ease)
 
 
+def updateGroupSettings(group_id: int, new_starting_ease: int, new_interval_modifier: int) -> None:
+    dconf = mw.col.decks.get_config(group_id)
+    print(f"Updating group {dconf['name']}...")
+
+    # default = `2500`, LowKey target will be `1300`
+    dconf['new']['initialFactor'] = int(new_starting_ease * 10)
+
+    # default is `1.0`, LowKey target will be `1.92`
+    dconf['rev']['ivlFct'] = float(new_interval_modifier / 100)
+
+    mw.col.decks.setConf(dconf, group_id)
+
+
+def updateGroups(new_starting_ease: int, new_interval_modifier: int) -> None:
+    dconfs = mw.col.decks.all_config()
+    for dconf in dconfs:
+        updateGroupSettings(dconf['id'], new_starting_ease, new_interval_modifier)
+
+
 class ResetEaseWindow(DialogUI):
     def __init__(self):
         super().__init__()
@@ -211,6 +230,7 @@ class ResetEaseWindow(DialogUI):
         sync_after_reset = self.syncCheckBox.isChecked()
         force_after = self.forceSyncCheckBox.isChecked()
         resetEase(self.easeSpinBox.value())
+        updateGroups(self.easeSpinBox.value(), self.imSpinBox.value())
         self.close()
 
 
