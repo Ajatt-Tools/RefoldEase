@@ -162,9 +162,9 @@ class DialogUI(QDialog):
         return hbox
 
 
-def adjustIM(new_ease: int, base_im: int = 100) -> float:
+def adjustIM(new_ease: int, base_im: int = 100) -> int:
     default_ease = 250
-    return default_ease * base_im / new_ease
+    return int(default_ease * base_im / new_ease)
 
 
 class ResetEaseWindow(DialogUI):
@@ -199,7 +199,7 @@ class ResetEaseWindow(DialogUI):
         self.cancelButton.clicked.connect(self.close)
 
     def updateImSpinBox(self):
-        self.imSpinBox.setValue(int(adjustIM(self.easeSpinBox.value(), self.defaultEaseImSpinBox.value())))
+        self.imSpinBox.setValue(adjustIM(self.easeSpinBox.value(), self.defaultEaseImSpinBox.value()))
 
     def onConfirm(self):
         global sync_after_reset, force_after
