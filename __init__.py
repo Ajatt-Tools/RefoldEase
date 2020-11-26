@@ -53,6 +53,7 @@ sync_before_reset: bool = config['sync_before_reset'] if 'sync_before_reset' in 
 sync_after_reset: bool = config['sync_after_reset'] if 'sync_after_reset' in config else False
 force_after: bool = config['force_after'] if 'force_after' in config else False
 skip_reset_notification: bool = config['skip_reset_notification'] if 'skip_reset_notification' in config else False
+update_option_groups: bool = config['update_option_groups'] if 'update_option_groups' in config else True
 
 
 ######################################################################
@@ -213,6 +214,7 @@ class ResetEaseWindow(DialogUI):
         self.updateImSpinBox()
         self.syncCheckBox.setChecked(sync_after_reset)
         self.forceSyncCheckBox.setChecked(force_after)
+        self.updateGroupsCheckBox.setChecked(update_option_groups)
 
     def connectUIElements(self):
         self.defaultEaseImSpinBox.editingFinished.connect(self.updateImSpinBox)

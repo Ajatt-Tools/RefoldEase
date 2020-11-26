@@ -16,3 +16,5 @@ getting pushed from desktop to AnkiWeb.
 or "Download from AnkiWeb". Choose **"Upload to AnkiWeb"**.
 Your other devices can download on next sync.
 * `skip_reset_notification` - Set to `true` if you've seen the reset ease dialog enough times or it bugs you.
+* `update_option_groups` - Whether to go through each `Options Group`
+and update its `Starting Ease` and `Interval Modifier` after the Ease reset.
