@@ -95,6 +95,10 @@ if sync_after_reset:
     menu_label += f" + {'Force ' if force_after else ''}Sync After"
 
 
+######################################################################
+# UI
+######################################################################
+
 class DialogUI(QDialog):
     def __init__(self):
         QDialog.__init__(self, parent=mw)
@@ -197,6 +201,10 @@ class ResetEaseWindow(DialogUI):
         resetEase(self.easeSpinBox.value())
         self.close()
 
+
+######################################################################
+# Entry point
+######################################################################
 
 def showDialog():
     dialog = ResetEaseWindow()
