@@ -10,7 +10,7 @@
 [![Matrix](https://img.shields.io/badge/Japanese_study_room-join-green.svg)](https://app.element.io/#/room/#djt:g33k.se)
 
 Sets the ease factor of all the cards in your collection to the value you choose,
-and tells you what `Interval Modifier` in `Option Groups` should be set to.
+and updates `Interval Modifier` and `Starting Ease` in every option group.
 Inspired by [ResetEZ](https://massimmersionapproach.com/table-of-contents/anki/low-key-anki/low-key-anki-summary-and-installation/).
 
 You can run the add-on by going to `Tools -> Refold Ease`.

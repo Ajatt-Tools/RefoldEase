@@ -75,7 +75,7 @@ def resetEase(ez_factor_human: int = 250):
         msg = f"Ease has been reset to {ez_factor_human}%."
         if sync_after_reset:
             msg += f"\nCollection will be synchronized{' in one direction' if force_after else ''}."
-        msg += "\nDon't forget to update your Interval Modifier and Starting Ease."
+        msg += "\nDon't forget to check your Interval Modifier and Starting Ease."
         showInfo(msg)
 
     # force a one-way sync if enabled
@@ -137,7 +137,7 @@ class DialogUI(QDialog):
         grid.addWidget(self.easeSpinBox, 2, 1)
         grid.addWidget(QLabel("%"), 2, 2)
 
-        grid.addWidget(QLabel("Recommended IM after refold:"), 3, 0)
+        grid.addWidget(QLabel("Recommended new IM:"), 3, 0)
         grid.addWidget(self.imSpinBox, 3, 1)
         grid.addWidget(QLabel("%"), 3, 2)
 
@@ -170,7 +170,6 @@ def adjustIM(new_ease: int, base_im: int = 100) -> int:
 
 def updateGroupSettings(group_id: int, new_starting_ease: int, new_interval_modifier: int) -> None:
     dconf = mw.col.decks.get_config(group_id)
-    print(f"Updating group {dconf['name']}...")
 
     # default = `2500`, LowKey target will be `1300`
     dconf['new']['initialFactor'] = int(new_starting_ease * 10)
@@ -179,6 +178,7 @@ def updateGroupSettings(group_id: int, new_starting_ease: int, new_interval_modi
     dconf['rev']['ivlFct'] = float(new_interval_modifier / 100)
 
     mw.col.decks.setConf(dconf, group_id)
+    print(f"Updated Option Group: {dconf['name']}.")
 
 
 def updateGroups(new_starting_ease: int, new_interval_modifier: int) -> None:
