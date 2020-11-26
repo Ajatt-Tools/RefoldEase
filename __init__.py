@@ -48,6 +48,7 @@ Config option combinations (set them below):
 
 config = mw.addonManager.getConfig(__name__)
 
+new_default_ease: int = config['new_default_ease'] if 'new_default_ease' in config else 130
 sync_before_reset: bool = config['sync_before_reset'] if 'sync_before_reset' in config else False
 sync_after_reset: bool = config['sync_after_reset'] if 'sync_after_reset' in config else False
 force_after: bool = config['force_after'] if 'force_after' in config else False
@@ -187,7 +188,7 @@ class ResetEaseWindow(DialogUI):
 
     def setDefaultValues(self):
         self.defaultEaseImSpinBox.setValue(100)
-        self.easeSpinBox.setValue(130)
+        self.easeSpinBox.setValue(new_default_ease)
         self.updateImSpinBox()
         self.syncCheckBox.setChecked(sync_after_reset)
         self.forceSyncCheckBox.setChecked(force_after)

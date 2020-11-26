@@ -2,6 +2,10 @@
 
 **Anki needs to be restarted after changing the config.**
 
+* `new_default_ease` - Your desired new Ease. This value should be set to `130`
+if you're following the new `“Low-key” Low-key Anki` setup,
+or to `250` if you stick to the old `Low-key` setup.
+Learn more about Low Key Anki [here](https://refold.la/roadmap/stage-1/a/anki-setup/).
 * `sync_before_reset` - If you would like to sync your Anki collection with an AnkiWeb account
 before changing the Ease factors of your cards.
 * `sync_after_reset` - Sync your Anki collection after changing the Ease.
