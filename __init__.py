@@ -203,7 +203,7 @@ class ResetEaseWindow(DialogUI):
 
     def setMinimums(self):
         self.defaultEaseImSpinBox.setMinimum(0)
-        self.easeSpinBox.setMinimum(1)
+        self.easeSpinBox.setMinimum(131)
         self.imSpinBox.setMinimum(0)
 
     def setMaximums(self):
