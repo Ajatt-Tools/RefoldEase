@@ -24,7 +24,7 @@ Check the `Force sync in one direction` checkbox if you notice
 that the updated ease values aren't getting pushed from desktop to AnkiWeb.
 
 ## Installation
-Install from [AnkiWeb](https://ankiweb.net/shared/info/xxxxxxxx), or manually with `git`:
+Install from [AnkiWeb](https://ankiweb.net/shared/info/819023663), or manually with `git`:
 
 ```
 git clone 'https://github.com/Ajatt-Tools/RefoldEase.git' ~/.local/share/Anki2/addons21/RefoldEase
