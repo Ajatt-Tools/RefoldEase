@@ -161,14 +161,27 @@ class DialogUI(QDialog):
         grid.addWidget(QLabel("Your IM at Ease=250%:"), 1, 0)
         grid.addWidget(self.defaultEaseImSpinBox, 1, 1)
         grid.addWidget(QLabel("%"), 1, 2)
+        self.defaultEaseImSpinBox.setToolTip(
+            "Your Interval Modifier before using this Ease setup.\n"
+            "You can find it by going to `Deck options` -> `Reviews` -> `Interval Modifier`."
+        )
 
         grid.addWidget(QLabel("Desired new Ease:"), 2, 0)
         grid.addWidget(self.easeSpinBox, 2, 1)
         grid.addWidget(QLabel("%"), 2, 2)
+        self.easeSpinBox.setToolTip(
+            "Your desired new Ease. This value should be set to `131%`\n"
+            "if you're following the new `“Low-key” Low-key Anki` setup,\n"
+            "or to `250%` if you stick to the old `Low-key` setup.\n"
+            "Because of the Anki limitations you can't set it to `130%`."
+        )
 
         grid.addWidget(QLabel("Recommended new IM:"), 3, 0)
         grid.addWidget(self.imSpinBox, 3, 1)
         grid.addWidget(QLabel("%"), 3, 2)
+        self.imSpinBox.setToolTip(
+            "This is your new Interval Modifier after applying this Ease setup."
+        )
 
         return grid
 
