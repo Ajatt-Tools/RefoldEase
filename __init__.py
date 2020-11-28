@@ -98,6 +98,9 @@ def adjustIM(new_ease: int, base_im: int = 100) -> int:
 
 
 def updateGroups(new_starting_ease: int, new_interval_modifier: int) -> None:
+    if not update_option_groups:
+        return
+
     dconfs = mw.col.decks.all_config()
 
     def updateGroupSettings(group_id: int) -> None:
@@ -249,18 +252,15 @@ class ResetEaseWindow(DialogUI):
     def updateImSpinBox(self):
         self.imSpinBox.setValue(adjustIM(self.easeSpinBox.value(), self.defaultEaseImSpinBox.value()))
 
-    def updateGroups(self):
-        if self.updateGroupsCheckBox.isChecked():
-            updateGroups(self.easeSpinBox.value(), self.imSpinBox.value())
-
     def onConfirm(self):
-        global sync_after_reset, force_after
+        global sync_after_reset, force_after, update_option_groups
         sync_after_reset = self.syncCheckBox.isChecked()
         force_after = self.forceSyncCheckBox.isChecked()
+        update_option_groups = self.updateGroupsCheckBox.isChecked()
 
         syncBefore()
         resetEase(self.easeSpinBox.value())
-        self.updateGroups()
+        updateGroups(self.easeSpinBox.value(), self.imSpinBox.value())
         notify(self.easeSpinBox.value())
         syncAfter()
 
