@@ -193,6 +193,9 @@ class DialogUI(QDialog):
         vbox.addWidget(self.syncCheckBox)
         vbox.addWidget(self.forceSyncCheckBox)
         vbox.addWidget(self.updateGroupsCheckBox)
+        self.updateGroupsCheckBox.setToolTip(
+            "Update Interval Modifier and Starting Ease in every options group."
+        )
         return vbox
 
     @staticmethod
