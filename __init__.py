@@ -61,6 +61,10 @@ modify_db_directly: bool = config.get('modify_db_directly', False)
 # Reset ease & other utils
 ######################################################################
 
+def wholeCollectionID() -> int:
+    return -1
+
+
 def syncBefore():
     # sync before resetting ease, if enabled
     if sync_before_reset:
@@ -88,12 +92,19 @@ def notify(ez_factor_human: int):
         showInfo(msg)
 
 
-def resetEaseDb(ez_factor: int):
-    mw.col.db.execute("update cards set factor = ?", ez_factor)
+def resetEaseDb(deck_id: int, ez_factor: int):
+    if deck_id == wholeCollectionID():
+        mw.col.db.execute("update cards set factor = ?", ez_factor)
+    else:
+        mw.col.db.execute("update cards set factor = ? where did = ?", ez_factor, deck_id)
 
 
-def resetEaseCol(ez_factor: int):
-    card_ids = mw.col.db.list("SELECT id FROM cards WHERE factor != 0")
+def resetEaseCol(deck_id: int, ez_factor: int):
+    if deck_id == wholeCollectionID():
+        card_ids = mw.col.db.list("SELECT id FROM cards WHERE factor != 0")
+    else:
+        card_ids = mw.col.db.list("SELECT id FROM cards WHERE factor != 0 AND did = ?", deck_id)
+
     for card_id in card_ids:
         card = mw.col.getCard(card_id)
         if card.factor != ez_factor:
@@ -101,12 +112,12 @@ def resetEaseCol(ez_factor: int):
             card.flush()
 
 
-def resetEase(ez_factor_human: int = 250):
+def resetEase(deck_id: int, ez_factor_human: int = 250):
     ez_factor_anki = ez_factor_human * 10
     if modify_db_directly is True:
-        resetEaseDb(ez_factor_anki)
+        resetEaseDb(deck_id, ez_factor_anki)
     else:
-        resetEaseCol(ez_factor_anki)
+        resetEaseCol(deck_id, ez_factor_anki)
 
 
 def adjustIM(new_ease: int, base_im: int = 100) -> int:
@@ -136,6 +147,16 @@ def updateGroups(new_starting_ease: int, new_interval_modifier: int) -> None:
         updateGroupSettings(dconf['id'])
 
 
+def getDecksInfo() -> list[tuple]:
+    result = []
+    decks = mw.col.decks.all()
+    for deck in decks:
+        result.append((deck["name"], deck["id"]))
+    result.sort(key=lambda d: d[0])
+    result.insert(0, ('Whole Collection', wholeCollectionID()))
+    return result
+
+
 # format menu item based on configuration
 menu_label = "Refold Ease"
 if sync_before_reset:
@@ -157,6 +178,7 @@ class DialogUI(QDialog):
         self.syncCheckBox = QCheckBox("Sync immediately")
         self.forceSyncCheckBox = QCheckBox("Force sync in one direction")
         self.updateGroupsCheckBox = QCheckBox("Update Option Groups")
+        self.deckComboBox = QComboBox()
         self.okButton = QPushButton("Ok")
         self.cancelButton = QPushButton("Cancel")
         self._setupUI()
@@ -168,12 +190,19 @@ class DialogUI(QDialog):
     def setupOuterLayout(self):
         vbox = QVBoxLayout()
         vbox.setSpacing(10)
+        vbox.addLayout(self.createDeckGroup())
         vbox.addLayout(self.createEaseGroup())
         vbox.addLayout(self.createCheckBoxGroup())
         vbox.addStretch(1)
         vbox.addWidget(self.createLearnMoreLink())
         vbox.addLayout(self.createBottomGroup())
         return vbox
+
+    def createDeckGroup(self):
+        hbox = QHBoxLayout()
+        hbox.addWidget(QLabel("Deck:"))
+        hbox.addWidget(self.deckComboBox, 1)
+        return hbox
 
     def createEaseGroup(self):
         grid = QGridLayout()
@@ -253,6 +282,7 @@ class ResetEaseWindow(DialogUI):
         self.imSpinBox.setMaximum(10000)
 
     def setDefaultValues(self):
+        [self.deckComboBox.addItem(*deck) for deck in getDecksInfo()]
         self.defaultEaseImSpinBox.setValue(100)
         self.easeSpinBox.setValue(new_default_ease)
         self.updateImSpinBox()
@@ -283,7 +313,7 @@ class ResetEaseWindow(DialogUI):
         update_option_groups = self.updateGroupsCheckBox.isChecked()
 
         syncBefore()
-        resetEase(self.easeSpinBox.value())
+        resetEase(self.deckComboBox.currentData(), self.easeSpinBox.value())
         updateGroups(self.easeSpinBox.value(), self.imSpinBox.value())
         notify(self.easeSpinBox.value())
         syncAfter()
