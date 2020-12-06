@@ -22,17 +22,23 @@ Description:
 Usage:
     1. Sync your other devices with AnkiWeb
     2. Run this script from Tools -> Refold Ease...
-    3. Do a normal sync afterwards.
+    3. If the force_after config option is set below, click "Upload to
+       AnkiWeb" on Anki's sync dialog (your other devices can download on
+       next sync)
 
 Config option combinations (set them below):
 
 1. Normal sync before and after reset
     * Set sync_before_reset and sync_after_reset to True
 
-2. Seen the reset ease dialog enough times?
+2. Force sync in one direction after reset
+    * Set sync_after_reset and force_after to True
+    * Might as well set sync_before_reset to True as well
+
+3. Seen the reset ease dialog enough times?
     Set skip_reset_notification to True
 
-3. Same as the original script (no sync)
+4. Same as the original script (no sync)
     * Set all four options to False
 """
 
@@ -45,6 +51,7 @@ config = mw.addonManager.getConfig(__name__)
 new_default_ease: int = config['new_default_ease'] if 'new_default_ease' in config else 131
 sync_before_reset: bool = config['sync_before_reset'] if 'sync_before_reset' in config else False
 sync_after_reset: bool = config['sync_after_reset'] if 'sync_after_reset' in config else False
+force_after: bool = config['force_after'] if 'force_after' in config else False
 skip_reset_notification: bool = config['skip_reset_notification'] if 'skip_reset_notification' in config else False
 update_option_groups: bool = config['update_option_groups'] if 'update_option_groups' in config else True
 
@@ -60,6 +67,11 @@ def syncBefore():
 
 
 def syncAfter():
+    # force a one-way sync if enabled
+    if force_after:
+        mw.col.scm += 1
+        mw.col.setMod()
+
     # sync after resetting ease if enabled
     if sync_after_reset:
         mw.onSync()
@@ -70,7 +82,7 @@ def notify(ez_factor_human: int):
     if not skip_reset_notification:
         msg = f"Ease has been reset to {ez_factor_human}%."
         if sync_after_reset:
-            msg += f"\nCollection will be synchronized."
+            msg += f"\nCollection will be synchronized{' in one direction' if force_after else ''}."
         msg += "\nDon't forget to check your Interval Modifier and Starting Ease."
         showInfo(msg)
 
@@ -118,7 +130,7 @@ menu_label = "Refold Ease"
 if sync_before_reset:
     menu_label += " + Sync Before"
 if sync_after_reset:
-    menu_label += f" + Sync After"
+    menu_label += f" + {'Force ' if force_after else ''}Sync After"
 
 
 ######################################################################
@@ -132,6 +144,7 @@ class DialogUI(QDialog):
         self.imSpinBox = QSpinBox()
         self.defaultEaseImSpinBox = QSpinBox()
         self.syncCheckBox = QCheckBox("Sync immediately")
+        self.forceSyncCheckBox = QCheckBox("Force sync in one direction")
         self.updateGroupsCheckBox = QCheckBox("Update Option Groups")
         self.okButton = QPushButton("Ok")
         self.cancelButton = QPushButton("Cancel")
@@ -185,6 +198,7 @@ class DialogUI(QDialog):
     def createCheckBoxGroup(self):
         vbox = QVBoxLayout()
         vbox.addWidget(self.syncCheckBox)
+        vbox.addWidget(self.forceSyncCheckBox)
         vbox.addWidget(self.updateGroupsCheckBox)
         self.updateGroupsCheckBox.setToolTip(
             "Update Interval Modifier and Starting Ease in every options group."
@@ -232,6 +246,7 @@ class ResetEaseWindow(DialogUI):
         self.easeSpinBox.setValue(new_default_ease)
         self.updateImSpinBox()
         self.syncCheckBox.setChecked(sync_after_reset)
+        self.forceSyncCheckBox.setChecked(force_after)
         self.updateGroupsCheckBox.setChecked(update_option_groups)
 
     def connectUIElements(self):
@@ -248,8 +263,9 @@ class ResetEaseWindow(DialogUI):
         self.imSpinBox.setValue(adjustIM(self.easeSpinBox.value(), self.defaultEaseImSpinBox.value()))
 
     def onConfirm(self):
-        global sync_after_reset, update_option_groups
+        global sync_after_reset, force_after, update_option_groups
         sync_after_reset = self.syncCheckBox.isChecked()
+        force_after = self.forceSyncCheckBox.isChecked()
         update_option_groups = self.updateGroupsCheckBox.isChecked()
 
         syncBefore()
