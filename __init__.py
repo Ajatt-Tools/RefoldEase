@@ -274,6 +274,9 @@ class ResetEaseWindow(DialogUI):
         self.imSpinBox.setValue(adjustIM(self.easeSpinBox.value(), self.defaultEaseImSpinBox.value()))
 
     def onConfirm(self):
+        self.okButton.setText("Please wait...")
+        self.okButton.repaint()
+
         global sync_after_reset, force_after, update_option_groups
         sync_after_reset = self.syncCheckBox.isChecked()
         force_after = self.forceSyncCheckBox.isChecked()
