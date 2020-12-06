@@ -46,15 +46,15 @@ Config option combinations (set them below):
 # Configuration
 ######################################################################
 
-config = mw.addonManager.getConfig(__name__)
+config: dict = mw.addonManager.getConfig(__name__)
 
-new_default_ease: int = config['new_default_ease'] if 'new_default_ease' in config else 131
-sync_before_reset: bool = config['sync_before_reset'] if 'sync_before_reset' in config else False
-sync_after_reset: bool = config['sync_after_reset'] if 'sync_after_reset' in config else False
-force_after: bool = config['force_after'] if 'force_after' in config else False
-skip_reset_notification: bool = config['skip_reset_notification'] if 'skip_reset_notification' in config else False
-update_option_groups: bool = config['update_option_groups'] if 'update_option_groups' in config else True
-modify_db_directly: bool = config['modify_db_directly'] if 'modify_db_directly' in config else False
+new_default_ease: int = config.get('new_default_ease', 131)
+sync_before_reset: bool = config.get('sync_before_reset', False)
+sync_after_reset: bool = config.get('sync_after_reset', False)
+force_after: bool = config.get('force_after', False)
+skip_reset_notification: bool = config.get('skip_reset_notification', False)
+update_option_groups: bool = config.get('update_option_groups', True)
+modify_db_directly: bool = config.get('modify_db_directly', False)
 
 
 ######################################################################
