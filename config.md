@@ -18,3 +18,6 @@ Your other devices can download on next sync.
 * `skip_reset_notification` - Set to `true` if you've seen the reset ease dialog enough times or it bugs you.
 * `update_option_groups` - Whether to go through each `Options Group`
 and update its `Starting Ease` and `Interval Modifier` after the Ease reset.
+* `modify_db_directly` - Change ease factors of cards directly through `mw.col.db.execute`.
+This method may be faster but it always requires a full sync afterwards
+because Anki won't know that card properties have been changed.

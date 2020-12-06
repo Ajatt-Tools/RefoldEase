@@ -4,5 +4,6 @@
   "sync_after_reset": false,
   "force_after": false,
   "skip_reset_notification": false,
-  "update_option_groups": true
+  "update_option_groups": true,
+  "modify_db_directly": false
 }

@@ -54,6 +54,7 @@ sync_after_reset: bool = config['sync_after_reset'] if 'sync_after_reset' in con
 force_after: bool = config['force_after'] if 'force_after' in config else False
 skip_reset_notification: bool = config['skip_reset_notification'] if 'skip_reset_notification' in config else False
 update_option_groups: bool = config['update_option_groups'] if 'update_option_groups' in config else True
+modify_db_directly: bool = config['modify_db_directly'] if 'modify_db_directly' in config else False
 
 
 ######################################################################
@@ -87,15 +88,25 @@ def notify(ez_factor_human: int):
         showInfo(msg)
 
 
-def resetEase(ez_factor_human: int = 250):
-    ez_factor_anki = ez_factor_human * 10
+def resetEaseDb(ez_factor: int):
+    mw.col.db.execute("update cards set factor = ?", ez_factor)
 
+
+def resetEaseCol(ez_factor: int):
     card_ids = mw.col.db.list("SELECT id FROM cards WHERE factor != 0")
     for card_id in card_ids:
         card = mw.col.getCard(card_id)
-        if card.factor != ez_factor_anki:
-            card.factor = ez_factor_anki
+        if card.factor != ez_factor:
+            card.factor = ez_factor
             card.flush()
+
+
+def resetEase(ez_factor_human: int = 250):
+    ez_factor_anki = ez_factor_human * 10
+    if modify_db_directly is True:
+        resetEaseDb(ez_factor_anki)
+    else:
+        resetEaseCol(ez_factor_anki)
 
 
 def adjustIM(new_ease: int, base_im: int = 100) -> int:
