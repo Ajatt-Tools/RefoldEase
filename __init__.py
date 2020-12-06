@@ -125,11 +125,14 @@ def adjustIM(new_ease: int, base_im: int = 100) -> int:
     return int(default_ease * base_im / new_ease)
 
 
-def updateGroups(new_starting_ease: int, new_interval_modifier: int) -> None:
+def updateGroups(deck_id: str, new_starting_ease: int, new_interval_modifier: int) -> None:
     if not update_option_groups:
         return
 
-    dconfs = mw.col.decks.all_config()
+    if deck_id == wholeCollectionID():
+        dconfs = mw.col.decks.all_config()
+    else:
+        dconfs = [mw.col.decks.confForDid(deck_id)]
 
     def updateGroupSettings(group_id: int) -> None:
         group_conf = mw.col.decks.get_config(group_id)
@@ -314,7 +317,7 @@ class ResetEaseWindow(DialogUI):
 
         syncBefore()
         resetEase(self.deckComboBox.currentData(), self.easeSpinBox.value())
-        updateGroups(self.easeSpinBox.value(), self.imSpinBox.value())
+        updateGroups(self.deckComboBox.currentData(), self.easeSpinBox.value(), self.imSpinBox.value())
         notify(self.easeSpinBox.value())
         syncAfter()
 
