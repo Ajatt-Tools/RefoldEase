@@ -175,8 +175,9 @@ class DialogUI(QDialog):
         self.easeSpinBox.setToolTip(
             "Your desired new Ease. This value should be set to `131%`\n"
             "if you're following the new `“Low-key” Low-key Anki` setup,\n"
-            "or to `250%` if you stick to the old `Low-key` setup.\n"
-            "Because of the Anki limitations you can't set it to `130%`."
+            "or to `250%` if you stick to the old `Low-key` setup.\n\n"
+            "Note: Because Anki resets Starting Ease back to 250% on each force sync if it's set to 130%,\n"
+            "The lowest possible Ease supported by the add-on is 131%."
         )
 
         grid.addWidget(QLabel("Recommended new IM:"), 3, 0)
