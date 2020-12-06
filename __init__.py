@@ -48,7 +48,7 @@ Config option combinations (set them below):
 
 config = mw.addonManager.getConfig(__name__)
 
-new_default_ease: int = config['new_default_ease'] if 'new_default_ease' in config else 130
+new_default_ease: int = config['new_default_ease'] if 'new_default_ease' in config else 131
 sync_before_reset: bool = config['sync_before_reset'] if 'sync_before_reset' in config else False
 sync_after_reset: bool = config['sync_after_reset'] if 'sync_after_reset' in config else False
 force_after: bool = config['force_after'] if 'force_after' in config else False
@@ -106,7 +106,7 @@ def updateGroups(new_starting_ease: int, new_interval_modifier: int) -> None:
     def updateGroupSettings(group_id: int) -> None:
         group_conf = mw.col.decks.get_config(group_id)
 
-        # default = `2500`, LowKey target will be `1300`
+        # default = `2500`, LowKey target will be `1310`
         group_conf['new']['initialFactor'] = int(new_starting_ease * 10)
 
         # default is `1.0`, LowKey target will be `1.92`
