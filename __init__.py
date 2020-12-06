@@ -89,7 +89,13 @@ def notify(ez_factor_human: int):
 
 def resetEase(ez_factor_human: int = 250):
     ez_factor_anki = ez_factor_human * 10
-    mw.col.db.execute("update cards set factor = ?", ez_factor_anki)
+
+    card_ids = mw.col.db.list("SELECT id FROM cards WHERE factor != 0")
+    for card_id in card_ids:
+        card = mw.col.getCard(card_id)
+        if card.factor != ez_factor_anki:
+            card.factor = ez_factor_anki
+            card.flush()
 
 
 def adjustIM(new_ease: int, base_im: int = 100) -> int:
