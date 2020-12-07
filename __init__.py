@@ -5,6 +5,8 @@ from aqt.utils import showInfo
 # import all of the Qt GUI library
 from aqt.qt import *
 
+from typing import List, Tuple
+
 """
 MattVsJapan Anki Reset Ease script
 
@@ -150,7 +152,7 @@ def updateGroups(deck_id: str, new_starting_ease: int, new_interval_modifier: in
         updateGroupSettings(dconf['id'])
 
 
-def getDecksInfo() -> list[tuple]:
+def getDecksInfo() -> List[Tuple]:
     result = []
     decks = mw.col.decks.all()
     for deck in decks:
