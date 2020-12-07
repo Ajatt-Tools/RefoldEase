@@ -244,7 +244,8 @@ class DialogUI(QDialog):
         vbox.addWidget(self.forceSyncCheckBox)
         vbox.addWidget(self.updateGroupsCheckBox)
         self.updateGroupsCheckBox.setToolTip(
-            "Update Interval Modifier and Starting Ease in every options group."
+            "Update Interval Modifier and Starting Ease in every Options Group\n"
+            "or just in the Options Group associated with the deck you've selected."
         )
         return vbox
 
