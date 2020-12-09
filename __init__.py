@@ -196,8 +196,7 @@ class DialogUI(QDialog):
         vbox = QVBoxLayout()
         vbox.setSpacing(10)
         vbox.addLayout(self.createDeckGroup())
-        vbox.addLayout(self.createEaseGroup())
-        vbox.addLayout(self.createCheckBoxGroup())
+        vbox.addWidget(self.createAdvancedOptionsGroup())
         vbox.addStretch(1)
         vbox.addWidget(self.createLearnMoreLink())
         vbox.addLayout(self.createBottomGroup())
@@ -208,6 +207,19 @@ class DialogUI(QDialog):
         hbox.addWidget(QLabel("Deck:"))
         hbox.addWidget(self.deckComboBox, 1)
         return hbox
+
+    def createAdvancedOptionsGroup(self):
+        groupbox = QGroupBox("Advanced Options")
+        groupbox.setCheckable(True)
+        groupbox.setChecked(False)
+
+        vbox = QVBoxLayout()
+        groupbox.setLayout(vbox)
+
+        vbox.addLayout(self.createEaseGroup())
+        vbox.addLayout(self.createCheckBoxGroup())
+
+        return groupbox
 
     def createEaseGroup(self):
         grid = QGridLayout()
