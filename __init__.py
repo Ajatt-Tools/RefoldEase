@@ -329,6 +329,7 @@ class RefoldEaseDialog(DialogUI):
         syncBefore()
         resetEase(self.deckComboBox.currentData(), self.easeSpinBox.value())
         updateGroups(self.deckComboBox.currentData(), self.easeSpinBox.value(), self.imSpinBox.value())
+        self.okButton.setText("Ok")
         notify(self.easeSpinBox.value())
         syncAfter()
 
