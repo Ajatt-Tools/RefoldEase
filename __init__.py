@@ -182,7 +182,7 @@ class DialogUI(QDialog):
         self.defaultEaseImSpinBox = QSpinBox()
         self.syncCheckBox = QCheckBox("Sync immediately")
         self.forceSyncCheckBox = QCheckBox("Force sync in one direction")
-        self.updateGroupsCheckBox = QCheckBox("Update Option Groups")
+        self.updateGroupsCheckBox = QCheckBox("Update Options Groups")
         self.deckComboBox = QComboBox()
         self.okButton = QPushButton("Ok")
         self.cancelButton = QPushButton("Cancel")
