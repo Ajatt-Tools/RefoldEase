@@ -1,5 +1,5 @@
 <p align="center">
-<img src="https://user-images.githubusercontent.com/69171671/101272438-0db35780-3784-11eb-9bc3-ff544897a74e.png">
+<img src="https://user-images.githubusercontent.com/69171671/101586172-3e3fff00-39d9-11eb-9778-cd20e12b7827.png">
 </p>
 
 # RefoldEase
