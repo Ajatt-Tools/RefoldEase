@@ -216,7 +216,7 @@ class DialogUI(QDialog):
         grid.addWidget(self.defaultEaseImSpinBox, 1, 1)
         grid.addWidget(QLabel("%"), 1, 2)
         self.defaultEaseImSpinBox.setToolTip(
-            "Your Interval Modifier before using this Ease setup.\n"
+            "Your Interval Modifier when your Starting Ease was 250%.\n"
             "You can find it by going to `Deck options` -> `Reviews` -> `Interval Modifier`."
         )
 
