@@ -269,7 +269,7 @@ class DialogUI(QDialog):
 # The addon's window
 ######################################################################
 
-class ResetEaseWindow(DialogUI):
+class RefoldEaseDialog(DialogUI):
     def __init__(self):
         super().__init__()
         self.setMinimums()
@@ -288,7 +288,6 @@ class ResetEaseWindow(DialogUI):
         self.imSpinBox.setMaximum(10000)
 
     def setDefaultValues(self):
-        [self.deckComboBox.addItem(*deck) for deck in getDecksInfo()]
         self.defaultEaseImSpinBox.setValue(100)
         self.easeSpinBox.setValue(new_default_ease)
         self.updateImSpinBox()
@@ -304,7 +303,16 @@ class ResetEaseWindow(DialogUI):
         self.easeSpinBox.valueChanged.connect(self.updateImSpinBox)
 
         self.okButton.clicked.connect(self.onConfirm)
-        self.cancelButton.clicked.connect(self.close)
+        self.cancelButton.clicked.connect(self.hide)
+
+    def populateDecks(self):
+        self.deckComboBox.clear()
+        for deck in getDecksInfo():
+            self.deckComboBox.addItem(*deck)
+
+    def show(self):
+        super().show()
+        self.populateDecks()
 
     def updateImSpinBox(self):
         self.imSpinBox.setValue(adjustIM(self.easeSpinBox.value(), self.defaultEaseImSpinBox.value()))
@@ -324,21 +332,18 @@ class ResetEaseWindow(DialogUI):
         notify(self.easeSpinBox.value())
         syncAfter()
 
-        self.close()
+        self.hide()
 
 
 ######################################################################
 # Entry point
 ######################################################################
 
-def showDialog():
-    dialog = ResetEaseWindow()
-    dialog.exec_()
-
-
+# init dialog
+dialog = RefoldEaseDialog()
 # create a new menu item
 action = QAction(menu_label, mw)
 # set it to call testFunction when it's clicked
-action.triggered.connect(showDialog)
+action.triggered.connect(dialog.show)
 # and add it to the tools menu
 mw.form.menuTools.addAction(action)
