@@ -338,12 +338,18 @@ class RefoldEaseDialog(DialogUI):
         force_after = self.forceSyncCheckBox.isChecked()
         update_option_groups = self.updateGroupsCheckBox.isChecked()
 
-        syncBefore()
-        resetEase(self.deckComboBox.currentData(), self.easeSpinBox.value())
-        updateGroups(self.deckComboBox.currentData(), self.easeSpinBox.value(), self.imSpinBox.value())
-        self.okButton.setText("Ok")
-        notify(self.easeSpinBox.value())
-        syncAfter()
+        try:
+            syncBefore()
+            resetEase(self.deckComboBox.currentData(), self.easeSpinBox.value())
+            updateGroups(self.deckComboBox.currentData(), self.easeSpinBox.value(), self.imSpinBox.value())
+            self.okButton.setText("Ok")
+            notify(self.easeSpinBox.value())
+            syncAfter()
+        except Exception as ex:
+            showInfo(
+                f"Sorry! Couldn't <b>refold</b> ease.<br>{ex}.<br>"
+                "Please <a href=\"https://github.com/Ajatt-Tools/RefoldEase\">fill an issue</a> on Github."
+            )
 
         self.hide()
 
