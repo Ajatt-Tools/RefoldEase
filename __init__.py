@@ -84,7 +84,7 @@ def syncAfter():
         mw.onSync()
 
 
-def notify(ez_factor_human: int):
+def notifyDone(ez_factor_human: int):
     # show a message box
     if not skip_reset_notification:
         msg = f"Ease has been reset to {ez_factor_human}%."
@@ -160,6 +160,12 @@ def getDecksInfo() -> List[Tuple]:
     result.sort(key=lambda d: d[0])
     result.insert(0, ('Whole Collection', wholeCollectionID()))
     return result
+
+
+def setEnabledText(button: QPushButton, state: bool, msg: str) -> None:
+    button.setEnabled(state)
+    button.setText(msg)
+    button.repaint()
 
 
 # format menu item based on configuration
@@ -288,6 +294,7 @@ class RefoldEaseDialog(DialogUI):
         self.setMaximums()
         self.setDefaultValues()
         self.connectUIElements()
+        QPushButton.setEnabledText = setEnabledText
 
     def setMinimums(self):
         self.defaultEaseImSpinBox.setMinimum(0)
@@ -330,27 +337,24 @@ class RefoldEaseDialog(DialogUI):
         self.imSpinBox.setValue(adjustIM(self.easeSpinBox.value(), self.defaultEaseImSpinBox.value()))
 
     def onConfirm(self):
-        self.okButton.setText("Please wait...")
-        self.okButton.repaint()
-
         global sync_after_reset, force_after, update_option_groups
         sync_after_reset = self.syncCheckBox.isChecked()
         force_after = self.forceSyncCheckBox.isChecked()
         update_option_groups = self.updateGroupsCheckBox.isChecked()
 
+        self.okButton.setEnabledText(False, "Please wait...")
         try:
             syncBefore()
             resetEase(self.deckComboBox.currentData(), self.easeSpinBox.value())
             updateGroups(self.deckComboBox.currentData(), self.easeSpinBox.value(), self.imSpinBox.value())
-            self.okButton.setText("Ok")
-            notify(self.easeSpinBox.value())
+            notifyDone(self.easeSpinBox.value())
             syncAfter()
         except Exception as ex:
             showInfo(
                 f"Sorry! Couldn't <b>refold</b> ease.<br>{ex}.<br>"
                 "Please <a href=\"https://github.com/Ajatt-Tools/RefoldEase\">fill an issue</a> on Github."
             )
-
+        self.okButton.setEnabledText(True, "Ok")
         self.hide()
 
 
