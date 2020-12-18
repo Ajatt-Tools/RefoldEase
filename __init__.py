@@ -153,11 +153,8 @@ def updateGroups(deck_id: str, new_starting_ease: int, new_interval_modifier: in
 
 
 def getDecksInfo() -> List[Tuple]:
-    result = []
-    decks = mw.col.decks.all()
-    for deck in decks:
-        result.append((deck["name"], deck["id"]))
-    result.sort(key=lambda d: d[0])
+    decks = sorted(mw.col.decks.all(), key=lambda deck: deck["name"])
+    result = [(deck["name"], deck["id"]) for deck in decks]
     result.insert(0, ('Whole Collection', wholeCollectionID()))
     return result
 
