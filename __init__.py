@@ -114,8 +114,12 @@ def resetEaseCol(deck_id: int, ez_factor: int):
             card.flush()
 
 
+def ezFactorAnki(ez_factor_human: int) -> int:
+    return ez_factor_human * 10
+
+
 def resetEase(deck_id: int, ez_factor_human: int = 250):
-    ez_factor_anki = ez_factor_human * 10
+    ez_factor_anki = ezFactorAnki(ez_factor_human)
     if modify_db_directly is True:
         resetEaseDb(deck_id, ez_factor_anki)
     else:
