@@ -115,7 +115,11 @@ def resetEaseCol(deck_id: int, ez_factor: int):
 
 
 def ezFactorAnki(ez_factor_human: int) -> int:
-    return ez_factor_human * 10
+    return int(ez_factor_human * 10)
+
+
+def ivlFactorAnki(ivl_fct_human: int) -> float:
+    return float(ivl_fct_human / 100)
 
 
 def resetEase(deck_id: int, ez_factor_human: int = 250):
@@ -131,7 +135,7 @@ def adjustIM(new_ease: int, base_im: int = 100) -> int:
     return int(default_ease * base_im / new_ease)
 
 
-def updateGroups(deck_id: str, new_starting_ease: int, new_interval_modifier: int) -> None:
+def updateGroups(deck_id: int, new_starting_ease: int, new_interval_modifier: int) -> None:
     if not update_option_groups:
         return
 
@@ -140,20 +144,18 @@ def updateGroups(deck_id: str, new_starting_ease: int, new_interval_modifier: in
     else:
         dconfs = [mw.col.decks.confForDid(deck_id)]
 
-    def updateGroupSettings(group_id: int) -> None:
-        group_conf = mw.col.decks.getConf(group_id)
-
+    def updateGroupSettings(group_conf: dict) -> None:
         # default = `2500`, LowKey target will be `1310`
-        group_conf['new']['initialFactor'] = int(new_starting_ease * 10)
+        group_conf['new']['initialFactor'] = ezFactorAnki(new_starting_ease)
 
         # default is `1.0`, LowKey target will be `1.92`
-        group_conf['rev']['ivlFct'] = float(new_interval_modifier / 100)
+        group_conf['rev']['ivlFct'] = ivlFactorAnki(new_interval_modifier)
 
-        mw.col.decks.setConf(group_conf, group_id)
+        mw.col.decks.setConf(group_conf, group_conf['id'])
         print(f"Updated Option Group: {group_conf['name']}.")
 
     for dconf in dconfs:
-        updateGroupSettings(dconf['id'])
+        updateGroupSettings(dconf)
 
 
 def getDecksInfo() -> List[Tuple]:
