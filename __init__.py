@@ -198,6 +198,7 @@ class DialogUI(QDialog):
     def _setupUI(self):
         self.setWindowTitle('Refold Ease')
         self.setLayout(self.setupOuterLayout())
+        self.addToolTips()
 
     def setupOuterLayout(self):
         vbox = QVBoxLayout()
@@ -234,28 +235,14 @@ class DialogUI(QDialog):
         grid.addWidget(QLabel("Your IM at Ease=250%:"), 1, 0)
         grid.addWidget(self.defaultEaseImSpinBox, 1, 1)
         grid.addWidget(QLabel("%"), 1, 2)
-        self.defaultEaseImSpinBox.setToolTip(
-            "Your Interval Modifier when your Starting Ease was 250%.\n"
-            "You can find it by going to `Deck options` -> `Reviews` -> `Interval Modifier`."
-        )
 
         grid.addWidget(QLabel("Desired new Ease:"), 2, 0)
         grid.addWidget(self.easeSpinBox, 2, 1)
         grid.addWidget(QLabel("%"), 2, 2)
-        self.easeSpinBox.setToolTip(
-            "Your desired new Ease. This value should be set to `131%`\n"
-            "if you're following the new `“Low-key” Low-key Anki` setup,\n"
-            "or to `250%` if you stick to the old `Low-key` setup.\n\n"
-            "Note: Because Anki resets Starting Ease back to 250% on each force sync if it's set to 130%,\n"
-            "The lowest possible Ease supported by the add-on is 131%."
-        )
 
         grid.addWidget(QLabel("Recommended new IM:"), 3, 0)
         grid.addWidget(self.imSpinBox, 3, 1)
         grid.addWidget(QLabel("%"), 3, 2)
-        self.imSpinBox.setToolTip(
-            "This is your new Interval Modifier after applying this Ease setup."
-        )
 
         return grid
 
@@ -264,10 +251,7 @@ class DialogUI(QDialog):
         vbox.addWidget(self.syncCheckBox)
         vbox.addWidget(self.forceSyncCheckBox)
         vbox.addWidget(self.updateGroupsCheckBox)
-        self.updateGroupsCheckBox.setToolTip(
-            "Update Interval Modifier and Starting Ease in every Options Group\n"
-            "or just in the Options Group associated with the deck you've selected."
-        )
+
         return vbox
 
     @staticmethod
@@ -282,6 +266,26 @@ class DialogUI(QDialog):
         hbox.addWidget(self.cancelButton)
         hbox.addStretch()
         return hbox
+
+    def addToolTips(self):
+        self.defaultEaseImSpinBox.setToolTip(
+            "Your Interval Modifier when your Starting Ease was 250%.\n"
+            "You can find it by going to `Deck options` -> `Reviews` -> `Interval Modifier`."
+        )
+        self.easeSpinBox.setToolTip(
+            "Your desired new Ease. This value should be set to `131%`\n"
+            "if you're following the new `“Low-key” Low-key Anki` setup,\n"
+            "or to `250%` if you stick to the old `Low-key` setup.\n\n"
+            "Note: Because Anki resets Starting Ease back to 250% on each force sync if it's set to 130%,\n"
+            "The lowest possible Ease supported by the add-on is 131%."
+        )
+        self.imSpinBox.setToolTip(
+            "This is your new Interval Modifier after applying this Ease setup."
+        )
+        self.updateGroupsCheckBox.setToolTip(
+            "Update Interval Modifier and Starting Ease in every Options Group\n"
+            "or just in the Options Group associated with the deck you've selected."
+        )
 
 
 ######################################################################
