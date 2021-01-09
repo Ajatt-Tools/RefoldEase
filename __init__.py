@@ -130,6 +130,25 @@ def resetEase(deck_id: int, ez_factor_human: int = 250):
         resetEaseCol(deck_id, ez_factor_anki)
 
 
+def decideAdjustOnReview(card: Card):
+    if config.get('adjust_on_review', False) is False:
+        # the user disabled the feature
+        return
+
+    if card.factor < ezFactorAnki(130):
+        # the card is brand new
+        return
+
+    if not (card.type == 2 and card.queue == 2):
+        # skip cards in learning
+        return
+
+    required_factor = ezFactorAnki(new_default_ease)
+    if card.factor != required_factor:
+        card.factor = required_factor
+        print(f"RefoldEase: Card #{card.id}'s ease has been adjusted to {new_default_ease}%.")
+
+
 def adjustIM(new_ease: int, base_im: int = 100) -> int:
     default_ease = 250
     return int(default_ease * base_im / new_ease)
