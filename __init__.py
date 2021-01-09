@@ -1,11 +1,10 @@
-# import the main window object (mw) from aqt
-from aqt import mw
-# import the "show info" tool from utils.py
-from aqt.utils import showInfo
-# import all of the Qt GUI library
-from aqt.qt import *
-
 from typing import List, Tuple
+
+from anki import hooks
+from anki.cards import Card
+from aqt import mw
+from aqt.qt import *
+from aqt.utils import showInfo
 
 """
 MattVsJapan Anki Reset Ease script
