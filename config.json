@@ -5,5 +5,6 @@
   "force_after": false,
   "skip_reset_notification": false,
   "update_option_groups": true,
-  "modify_db_directly": false
+  "modify_db_directly": false,
+  "adjust_on_review": false
 }

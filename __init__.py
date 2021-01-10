@@ -145,7 +145,7 @@ def decideAdjustOnReview(card: Card):
     required_factor = ezFactorAnki(new_default_ease)
     if card.factor != required_factor:
         card.factor = required_factor
-        print(f"RefoldEase: Card #{card.id}'s ease has been adjusted to {new_default_ease}%.")
+        print(f"RefoldEase: Card #{card.id}'s Ease has been adjusted to {new_default_ease}%.")
 
 
 def adjustIM(new_ease: int, base_im: int = 100) -> int:
@@ -395,3 +395,5 @@ action = QAction(menu_label, mw)
 action.triggered.connect(dialog.show)
 # and add it to the tools menu
 mw.form.menuTools.addAction(action)
+# subscribe to the flush event
+hooks.card_will_flush.append(decideAdjustOnReview)
