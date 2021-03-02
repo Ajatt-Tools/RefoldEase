@@ -93,18 +93,25 @@ def notifyDone(ez_factor_human: int):
         showInfo(msg)
 
 
-def resetEaseDb(deck_id: int, ez_factor: int):
-    if deck_id == wholeCollectionID():
+def whole_col_selected(dids: List[int]) -> bool:
+    return len(dids) == 1 and dids[0] == wholeCollectionID()
+
+
+def resetEaseDb(dids: List[int], ez_factor: int):
+    if whole_col_selected(dids):
         mw.col.db.execute("update cards set factor = ?", ez_factor)
     else:
-        mw.col.db.execute("update cards set factor = ? where did = ?", ez_factor, deck_id)
+        for did in dids:
+            mw.col.db.execute("update cards set factor = ? where did = ?", ez_factor, did)
 
 
-def resetEaseCol(deck_id: int, ez_factor: int):
-    if deck_id == wholeCollectionID():
-        card_ids = mw.col.db.list("SELECT id FROM cards WHERE factor != 0")
+def resetEaseCol(dids: List[int], ez_factor: int):
+    card_ids = []
+    if whole_col_selected(dids):
+        card_ids.extend(mw.col.db.list("SELECT id FROM cards WHERE factor != 0"))
     else:
-        card_ids = mw.col.db.list("SELECT id FROM cards WHERE factor != 0 AND did = ?", deck_id)
+        for did in dids:
+            card_ids.extend(mw.col.db.list("SELECT id FROM cards WHERE factor != 0 AND did = ?", did))
 
     for card_id in card_ids:
         card = mw.col.getCard(card_id)
@@ -121,12 +128,12 @@ def ivlFactorAnki(ivl_fct_human: int) -> float:
     return float(ivl_fct_human / 100)
 
 
-def resetEase(deck_id: int, ez_factor_human: int = 250):
+def resetEase(dids: List[int], ez_factor_human: int = 250):
     ez_factor_anki = ezFactorAnki(ez_factor_human)
     if modify_db_directly is True:
-        resetEaseDb(deck_id, ez_factor_anki)
+        resetEaseDb(dids, ez_factor_anki)
     else:
-        resetEaseCol(deck_id, ez_factor_anki)
+        resetEaseCol(dids, ez_factor_anki)
 
 
 def decideAdjustOnReview(card: Card):
@@ -153,14 +160,14 @@ def adjustIM(new_ease: int, base_im: int = 100) -> int:
     return int(default_ease * base_im / new_ease)
 
 
-def updateGroups(deck_id: int, new_starting_ease: int, new_interval_modifier: int) -> None:
+def updateGroups(dids: List[int], new_starting_ease: int, new_interval_modifier: int) -> None:
     if not update_option_groups:
         return
 
-    if deck_id == wholeCollectionID():
+    if whole_col_selected(dids):
         dconfs = mw.col.decks.allConf()
     else:
-        dconfs = [mw.col.decks.confForDid(deck_id)]
+        dconfs = [mw.col.decks.confForDid(did) for did in dids]
 
     def updateGroupSettings(group_conf: dict) -> None:
         # default = `2500`, LowKey target will be `1310`
@@ -177,7 +184,7 @@ def updateGroups(deck_id: int, new_starting_ease: int, new_interval_modifier: in
 
 
 def getDecksInfo() -> List[Tuple]:
-    decks = sorted(mw.col.decks.all(), key=lambda deck: deck["name"])
+    decks = sorted(mw.col.decks.all_names_and_ids(), key=lambda deck: deck["name"])
     result = [(deck["name"], deck["id"]) for deck in decks]
     result.insert(0, ('Whole Collection', wholeCollectionID()))
     return result
@@ -361,6 +368,17 @@ class RefoldEaseDialog(DialogUI):
     def updateImSpinBox(self):
         self.imSpinBox.setValue(adjustIM(self.easeSpinBox.value(), self.defaultEaseImSpinBox.value()))
 
+    def get_selected_dids(self) -> List[int]:
+        selected_deck_name = self.deckComboBox.currentText()
+        deck_names_and_ids = mw.col.decks.all_names_and_ids()
+        selected_dids = [self.deckComboBox.currentData()]
+
+        for deck in deck_names_and_ids:
+            if deck['name'].startswith(selected_deck_name + "::"):
+                selected_dids.append(deck['id'])
+
+        return selected_dids
+
     def onConfirm(self):
         global sync_after_reset, force_after, update_option_groups
         sync_after_reset = self.syncCheckBox.isChecked()
@@ -370,8 +388,8 @@ class RefoldEaseDialog(DialogUI):
         self.okButton.setEnabledText(False, "Please wait...")
         try:
             syncBefore()
-            resetEase(self.deckComboBox.currentData(), self.easeSpinBox.value())
-            updateGroups(self.deckComboBox.currentData(), self.easeSpinBox.value(), self.imSpinBox.value())
+            resetEase(self.get_selected_dids(), self.easeSpinBox.value())
+            updateGroups(self.get_selected_dids(), self.easeSpinBox.value(), self.imSpinBox.value())
             notifyDone(self.easeSpinBox.value())
             syncAfter()
         except Exception as ex:
