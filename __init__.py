@@ -62,17 +62,17 @@ modify_db_directly: bool = config.get('modify_db_directly', False)
 # Reset ease & other utils
 ######################################################################
 
-def wholeCollectionID() -> int:
+def whole_collection_id() -> int:
     return -1
 
 
-def syncBefore():
+def sync_before():
     # sync before resetting ease, if enabled
     if sync_before_reset:
         mw.onSync()
 
 
-def syncAfter():
+def sync_after():
     # force a one-way sync if enabled
     if force_after:
         mw.col.scm += 1
@@ -83,7 +83,7 @@ def syncAfter():
         mw.onSync()
 
 
-def notifyDone(ez_factor_human: int):
+def notify_done(ez_factor_human: int):
     # show a message box
     if not skip_reset_notification:
         msg = f"Ease has been reset to {ez_factor_human}%."
@@ -94,10 +94,10 @@ def notifyDone(ez_factor_human: int):
 
 
 def whole_col_selected(dids: List[int]) -> bool:
-    return len(dids) == 1 and dids[0] == wholeCollectionID()
+    return len(dids) == 1 and dids[0] == whole_collection_id()
 
 
-def resetEaseDb(dids: List[int], ez_factor: int):
+def reset_ease_db(dids: List[int], ez_factor: int):
     if whole_col_selected(dids):
         mw.col.db.execute("update cards set factor = ?", ez_factor)
     else:
@@ -105,7 +105,7 @@ def resetEaseDb(dids: List[int], ez_factor: int):
             mw.col.db.execute("update cards set factor = ? where did = ?", ez_factor, did)
 
 
-def resetEaseCol(dids: List[int], ez_factor: int):
+def reset_ease_col(dids: List[int], ez_factor: int):
     card_ids = []
     if whole_col_selected(dids):
         card_ids.extend(mw.col.db.list("SELECT id FROM cards WHERE factor != 0"))
@@ -120,28 +120,27 @@ def resetEaseCol(dids: List[int], ez_factor: int):
             card.flush()
 
 
-def ezFactorAnki(ez_factor_human: int) -> int:
+def ez_factor_anki(ez_factor_human: int) -> int:
     return int(ez_factor_human * 10)
 
 
-def ivlFactorAnki(ivl_fct_human: int) -> float:
+def ivl_factor_anki(ivl_fct_human: int) -> float:
     return float(ivl_fct_human / 100)
 
 
-def resetEase(dids: List[int], ez_factor_human: int = 250):
-    ez_factor_anki = ezFactorAnki(ez_factor_human)
+def reset_ease(dids: List[int], ez_factor_human: int = 250):
     if modify_db_directly is True:
-        resetEaseDb(dids, ez_factor_anki)
+        reset_ease_db(dids, ez_factor_anki(ez_factor_human))
     else:
-        resetEaseCol(dids, ez_factor_anki)
+        reset_ease_col(dids, ez_factor_anki(ez_factor_human))
 
 
-def decideAdjustOnReview(card: Card):
+def decide_adjust_on_review(card: Card):
     if config.get('adjust_on_review', False) is False:
         # the user disabled the feature
         return
 
-    if card.factor < ezFactorAnki(130):
+    if card.factor < ez_factor_anki(130):
         # the card is brand new
         return
 
@@ -149,18 +148,18 @@ def decideAdjustOnReview(card: Card):
         # skip cards in learning
         return
 
-    required_factor = ezFactorAnki(new_default_ease)
+    required_factor = ez_factor_anki(new_default_ease)
     if card.factor != required_factor:
         card.factor = required_factor
         print(f"RefoldEase: Card #{card.id}'s Ease has been adjusted to {new_default_ease}%.")
 
 
-def adjustIM(new_ease: int, base_im: int = 100) -> int:
+def adjust_im(new_ease: int, base_im: int = 100) -> int:
     default_ease = 250
     return int(default_ease * base_im / new_ease)
 
 
-def updateGroups(dids: List[int], new_starting_ease: int, new_interval_modifier: int) -> None:
+def update_groups(dids: List[int], new_starting_ease: int, new_interval_modifier: int) -> None:
     if not update_option_groups:
         return
 
@@ -169,28 +168,28 @@ def updateGroups(dids: List[int], new_starting_ease: int, new_interval_modifier:
     else:
         dconfs = [mw.col.decks.confForDid(did) for did in dids]
 
-    def updateGroupSettings(group_conf: dict) -> None:
+    def update_group_settings(group_conf: dict) -> None:
         # default = `2500`, LowKey target will be `1310`
-        group_conf['new']['initialFactor'] = ezFactorAnki(new_starting_ease)
+        group_conf['new']['initialFactor'] = ez_factor_anki(new_starting_ease)
 
         # default is `1.0`, LowKey target will be `1.92`
-        group_conf['rev']['ivlFct'] = ivlFactorAnki(new_interval_modifier)
+        group_conf['rev']['ivlFct'] = ivl_factor_anki(new_interval_modifier)
 
         mw.col.decks.setConf(group_conf, group_conf['id'])
         print(f"Updated Option Group: {group_conf['name']}.")
 
     for dconf in dconfs:
-        updateGroupSettings(dconf)
+        update_group_settings(dconf)
 
 
-def getDecksInfo() -> List[Tuple]:
+def get_decks_info() -> List[Tuple]:
     decks = sorted(mw.col.decks.all_names_and_ids(), key=lambda deck: deck["name"])
     result = [(deck["name"], deck["id"]) for deck in decks]
-    result.insert(0, ('Whole Collection', wholeCollectionID()))
+    result.insert(0, ('Whole Collection', whole_collection_id()))
     return result
 
 
-def setEnabledText(button: QPushButton, state: bool, msg: str) -> None:
+def set_enabled_text(button: QPushButton, state: bool, msg: str) -> None:
     button.setEnabled(state)
     button.setText(msg)
     button.repaint()
@@ -209,8 +208,8 @@ if sync_after_reset:
 ######################################################################
 
 class DialogUI(QDialog):
-    def __init__(self):
-        QDialog.__init__(self, parent=mw)
+    def __init__(self, *args, **kwargs):
+        super(DialogUI, self).__init__(parent=mw, *args, **kwargs)
         self.easeSpinBox = QSpinBox()
         self.imSpinBox = QSpinBox()
         self.defaultEaseImSpinBox = QSpinBox()
@@ -220,30 +219,30 @@ class DialogUI(QDialog):
         self.deckComboBox = QComboBox()
         self.okButton = QPushButton("Ok")
         self.cancelButton = QPushButton("Cancel")
-        self._setupUI()
+        self._setup_ui()
 
-    def _setupUI(self):
+    def _setup_ui(self):
         self.setWindowTitle('Refold Ease')
-        self.setLayout(self.setupOuterLayout())
-        self.addToolTips()
+        self.setLayout(self.setup_outer_layout())
+        self.add_tool_tips()
 
-    def setupOuterLayout(self):
+    def setup_outer_layout(self):
         vbox = QVBoxLayout()
         vbox.setSpacing(10)
-        vbox.addLayout(self.createDeckGroup())
-        vbox.addWidget(self.createAdvancedOptionsGroup())
+        vbox.addLayout(self.create_deck_group())
+        vbox.addWidget(self.create_advanced_options_group())
         vbox.addStretch(1)
-        vbox.addWidget(self.createLearnMoreLink())
-        vbox.addLayout(self.createBottomGroup())
+        vbox.addWidget(self.create_learn_more_link())
+        vbox.addLayout(self.create_bottom_group())
         return vbox
 
-    def createDeckGroup(self):
+    def create_deck_group(self):
         hbox = QHBoxLayout()
         hbox.addWidget(QLabel("Deck:"))
         hbox.addWidget(self.deckComboBox, 1)
         return hbox
 
-    def createAdvancedOptionsGroup(self):
+    def create_advanced_options_group(self):
         groupbox = QGroupBox("Advanced Options")
         groupbox.setCheckable(True)
         groupbox.setChecked(False)
@@ -251,12 +250,12 @@ class DialogUI(QDialog):
         vbox = QVBoxLayout()
         groupbox.setLayout(vbox)
 
-        vbox.addLayout(self.createEaseGroup())
-        vbox.addLayout(self.createCheckBoxGroup())
+        vbox.addLayout(self.create_ease_group())
+        vbox.addLayout(self.create_check_box_group())
 
         return groupbox
 
-    def createEaseGroup(self):
+    def create_ease_group(self):
         grid = QGridLayout()
 
         grid.addWidget(QLabel("Your IM at Ease=250%:"), 1, 0)
@@ -273,7 +272,7 @@ class DialogUI(QDialog):
 
         return grid
 
-    def createCheckBoxGroup(self):
+    def create_check_box_group(self):
         vbox = QVBoxLayout()
         vbox.addWidget(self.syncCheckBox)
         vbox.addWidget(self.forceSyncCheckBox)
@@ -282,19 +281,19 @@ class DialogUI(QDialog):
         return vbox
 
     @staticmethod
-    def createLearnMoreLink():
+    def create_learn_more_link():
         label = QLabel('<a href="https://refold.la/roadmap/stage-1/a/anki-setup">Learn more</a>')
         label.setOpenExternalLinks(True)
         return label
 
-    def createBottomGroup(self):
+    def create_bottom_group(self):
         hbox = QHBoxLayout()
         hbox.addWidget(self.okButton)
         hbox.addWidget(self.cancelButton)
         hbox.addStretch()
         return hbox
 
-    def addToolTips(self):
+    def add_tool_tips(self):
         self.defaultEaseImSpinBox.setToolTip(
             "Your Interval Modifier when your Starting Ease was 250%.\n"
             "You can find it by going to `Deck options` -> `Reviews` -> `Interval Modifier`."
@@ -322,51 +321,51 @@ class DialogUI(QDialog):
 class RefoldEaseDialog(DialogUI):
     def __init__(self):
         super().__init__()
-        self.setMinimums()
-        self.setMaximums()
-        self.setDefaultValues()
-        self.connectUIElements()
-        QPushButton.setEnabledText = setEnabledText
+        self.set_minimums()
+        self.set_maximums()
+        self.set_default_values()
+        self.connect_ui_elements()
+        QPushButton.setEnabledText = set_enabled_text
 
-    def setMinimums(self):
+    def set_minimums(self):
         self.defaultEaseImSpinBox.setMinimum(0)
         self.easeSpinBox.setMinimum(131)
         self.imSpinBox.setMinimum(0)
 
-    def setMaximums(self):
+    def set_maximums(self):
         self.defaultEaseImSpinBox.setMaximum(10000)
         self.easeSpinBox.setMaximum(10000)
         self.imSpinBox.setMaximum(10000)
 
-    def setDefaultValues(self):
+    def set_default_values(self):
         self.defaultEaseImSpinBox.setValue(100)
         self.easeSpinBox.setValue(new_default_ease)
-        self.updateImSpinBox()
+        self.update_im_spin_box()
         self.syncCheckBox.setChecked(sync_after_reset)
         self.forceSyncCheckBox.setChecked(force_after)
         self.updateGroupsCheckBox.setChecked(update_option_groups)
 
-    def connectUIElements(self):
-        self.defaultEaseImSpinBox.editingFinished.connect(self.updateImSpinBox)
-        self.easeSpinBox.editingFinished.connect(self.updateImSpinBox)
+    def connect_ui_elements(self):
+        self.defaultEaseImSpinBox.editingFinished.connect(self.update_im_spin_box)
+        self.easeSpinBox.editingFinished.connect(self.update_im_spin_box)
 
-        self.defaultEaseImSpinBox.valueChanged.connect(self.updateImSpinBox)
-        self.easeSpinBox.valueChanged.connect(self.updateImSpinBox)
+        self.defaultEaseImSpinBox.valueChanged.connect(self.update_im_spin_box)
+        self.easeSpinBox.valueChanged.connect(self.update_im_spin_box)
 
-        self.okButton.clicked.connect(self.onConfirm)
+        self.okButton.clicked.connect(self.on_confirm)
         self.cancelButton.clicked.connect(self.hide)
 
-    def populateDecks(self):
+    def populate_decks(self):
         self.deckComboBox.clear()
-        for deck in getDecksInfo():
+        for deck in get_decks_info():
             self.deckComboBox.addItem(*deck)
 
     def show(self):
         super().show()
-        self.populateDecks()
+        self.populate_decks()
 
-    def updateImSpinBox(self):
-        self.imSpinBox.setValue(adjustIM(self.easeSpinBox.value(), self.defaultEaseImSpinBox.value()))
+    def update_im_spin_box(self):
+        self.imSpinBox.setValue(adjust_im(self.easeSpinBox.value(), self.defaultEaseImSpinBox.value()))
 
     def get_selected_dids(self) -> List[int]:
         selected_deck_name = self.deckComboBox.currentText()
@@ -379,7 +378,7 @@ class RefoldEaseDialog(DialogUI):
 
         return selected_dids
 
-    def onConfirm(self):
+    def on_confirm(self):
         global sync_after_reset, force_after, update_option_groups
         sync_after_reset = self.syncCheckBox.isChecked()
         force_after = self.forceSyncCheckBox.isChecked()
@@ -387,11 +386,11 @@ class RefoldEaseDialog(DialogUI):
 
         self.okButton.setEnabledText(False, "Please wait...")
         try:
-            syncBefore()
-            resetEase(self.get_selected_dids(), self.easeSpinBox.value())
-            updateGroups(self.get_selected_dids(), self.easeSpinBox.value(), self.imSpinBox.value())
-            notifyDone(self.easeSpinBox.value())
-            syncAfter()
+            sync_before()
+            reset_ease(self.get_selected_dids(), self.easeSpinBox.value())
+            update_groups(self.get_selected_dids(), self.easeSpinBox.value(), self.imSpinBox.value())
+            notify_done(self.easeSpinBox.value())
+            sync_after()
         except Exception as ex:
             showInfo(
                 f"Sorry! Couldn't <b>refold</b> ease.<br>{ex}.<br>"
@@ -414,4 +413,4 @@ action.triggered.connect(dialog.show)
 # and add it to the tools menu
 mw.form.menuTools.addAction(action)
 # subscribe to the flush event
-hooks.card_will_flush.append(decideAdjustOnReview)
+hooks.card_will_flush.append(decide_adjust_on_review)
