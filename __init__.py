@@ -194,8 +194,8 @@ def update_groups(dids: List[int], ease_human: int, im_human: int) -> None:
 
 
 def get_decks_info() -> List[Tuple]:
-    decks = sorted(mw.col.decks.all_names_and_ids(), key=lambda deck: deck["name"])
-    result = [(deck["name"], deck["id"]) for deck in decks]
+    decks = sorted(mw.col.decks.all_names_and_ids(), key=lambda deck: deck.name)
+    result = [(deck.name, deck.id) for deck in decks]
     result.insert(0, ('Whole Collection', whole_collection_id()))
     return result
 
@@ -384,8 +384,8 @@ class RefoldEaseDialog(DialogUI):
         selected_dids = [self.deckComboBox.currentData()]
 
         for deck in deck_names_and_ids:
-            if deck['name'].startswith(selected_deck_name + "::"):
-                selected_dids.append(deck['id'])
+            if deck.name.startswith(selected_deck_name + "::"):
+                selected_dids.append(deck.id)
 
         return selected_dids
 
