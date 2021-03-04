@@ -159,7 +159,28 @@ def adjust_im(new_ease: int, base_im: int = 100) -> int:
     return int(default_ease * base_im / new_ease)
 
 
-def update_groups(dids: List[int], new_starting_ease: int, new_interval_modifier: int) -> None:
+def unique(_list: List[dict], key) -> List[dict]:
+    added_ids = set()
+    result = []
+    for item in _list:
+        if not item[key] in added_ids:
+            result.append(item)
+            added_ids.add(item['id'])
+    return result
+
+
+def update_group_settings(group_conf: dict, ease_human, im_human) -> None:
+    # default = `2500`, LowKey target will be `1310`
+    group_conf['new']['initialFactor'] = ez_factor_anki(ease_human)
+
+    # default is `1.0`, LowKey target will be `1.92`
+    group_conf['rev']['ivlFct'] = ivl_factor_anki(im_human)
+
+    mw.col.decks.setConf(group_conf, group_conf['id'])
+    print(f"Updated Option Group: {group_conf['name']}.")
+
+
+def update_groups(dids: List[int], ease_human: int, im_human: int) -> None:
     if not update_option_groups:
         return
 
@@ -168,18 +189,8 @@ def update_groups(dids: List[int], new_starting_ease: int, new_interval_modifier
     else:
         dconfs = [mw.col.decks.confForDid(did) for did in dids]
 
-    def update_group_settings(group_conf: dict) -> None:
-        # default = `2500`, LowKey target will be `1310`
-        group_conf['new']['initialFactor'] = ez_factor_anki(new_starting_ease)
-
-        # default is `1.0`, LowKey target will be `1.92`
-        group_conf['rev']['ivlFct'] = ivl_factor_anki(new_interval_modifier)
-
-        mw.col.decks.setConf(group_conf, group_conf['id'])
-        print(f"Updated Option Group: {group_conf['name']}.")
-
-    for dconf in dconfs:
-        update_group_settings(dconf)
+    for dconf in unique(dconfs, 'id'):
+        update_group_settings(dconf, ease_human, im_human)
 
 
 def get_decks_info() -> List[Tuple]:
