@@ -1,9 +1,9 @@
 from typing import List, Tuple
 
-from anki import hooks
 from anki.cards import Card
-from aqt import mw
+from aqt import mw, gui_hooks
 from aqt.qt import *
+from aqt.reviewer import Reviewer
 from aqt.utils import showInfo
 
 """
@@ -135,7 +135,7 @@ def reset_ease(dids: List[int], ez_factor_human: int = 250):
         reset_ease_col(dids, ez_factor_anki(ez_factor_human))
 
 
-def decide_adjust_on_review(card: Card):
+def decide_adjust_on_review(ease_tuple: Tuple[bool, int], _: Reviewer, card: Card):
     if config.get('adjust_on_review', False) is False:
         # the user disabled the feature
         return
@@ -149,9 +149,12 @@ def decide_adjust_on_review(card: Card):
         return
 
     required_factor = ez_factor_anki(new_default_ease)
+
     if card.factor != required_factor:
         card.factor = required_factor
         print(f"RefoldEase: Card #{card.id}'s Ease has been adjusted to {new_default_ease}%.")
+
+    return ease_tuple
 
 
 def adjust_im(new_ease: int, base_im: int = 100) -> int:
@@ -423,5 +426,5 @@ action = QAction(menu_label, mw)
 action.triggered.connect(dialog.show)
 # and add it to the tools menu
 mw.form.menuTools.addAction(action)
-# subscribe to the flush event
-hooks.card_will_flush.append(decide_adjust_on_review)
+# adjust ease factor before review, if enabled
+gui_hooks.reviewer_will_answer_card.append(decide_adjust_on_review)
