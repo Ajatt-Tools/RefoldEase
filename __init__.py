@@ -138,15 +138,15 @@ def reset_ease(dids: List[int], ez_factor_human: int = 250):
 def decide_adjust_on_review(ease_tuple: Tuple[bool, int], _: Reviewer, card: Card):
     if config.get('adjust_on_review', False) is False:
         # the user disabled the feature
-        return
+        return ease_tuple
 
     if card.factor < ez_factor_anki(130):
         # the card is brand new
-        return
+        return ease_tuple
 
     if not (card.type == 2 and card.queue == 2):
         # skip cards in learning
-        return
+        return ease_tuple
 
     required_factor = ez_factor_anki(new_default_ease)
 
