@@ -18,6 +18,7 @@
 #
 # Any modifications to this file must keep this entire header intact.
 
+import math
 from typing import List, Tuple, Literal
 
 from anki.cards import Card
@@ -26,6 +27,7 @@ from aqt.reviewer import Reviewer
 from aqt.utils import showInfo
 
 from .config import config
+from .consts import *
 
 
 ######################################################################
@@ -127,8 +129,7 @@ def decide_adjust_on_review(ease_tuple: Tuple[bool, Literal[1, 2, 3, 4]], _: Rev
 
 
 def adjust_im(new_ease: int, base_im: int = 100) -> int:
-    default_ease = 250
-    return int(default_ease * base_im / new_ease)
+    return math.ceil(ANKI_DEFAULT_EASE * base_im / new_ease)
 
 
 def unique(_list: List[dict], key) -> List[dict]:
