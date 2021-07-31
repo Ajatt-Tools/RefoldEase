@@ -52,7 +52,7 @@ class DialogUI(QDialog):
     def _setup_ui(self):
         self.setWindowTitle('Refold Ease')
         self.setLayout(self.setup_outer_layout())
-        self.add_tool_tips()
+        self.add_tooltips()
 
     def setup_outer_layout(self):
         vbox = QVBoxLayout()
@@ -114,7 +114,7 @@ class DialogUI(QDialog):
         hbox.addWidget(self.help_button)
         return hbox
 
-    def add_tool_tips(self):
+    def add_tooltips(self):
         self.defaultEaseImSpinBox.setToolTip(
             "Your Interval Modifier when your Starting Ease was 250%.\n"
             "You can find it by going to `Deck options` -> `Reviews` -> `Interval Modifier`."
@@ -179,22 +179,22 @@ class RefoldEaseDialog(DialogUI):
     def set_default_values(self) -> None:
         self.defaultEaseImSpinBox.setValue(100)
         self.easeSpinBox.setValue(config.get('new_default_ease'))
-        self.update_im_spin_box()
         self.syncCheckBox.setChecked(config.get('sync_after_reset', False))
         self.forceSyncCheckBox.setChecked(config.get('force_after', False))
         self.updateGroupsCheckBox.setChecked(config.get('update_option_groups', False))
         self.advanced_opts_groupbox.setChecked(config.get('advanced_options', False))
+        self.update_im_spin_box()
 
     def connect_ui_elements(self) -> None:
-        self.defaultEaseImSpinBox.editingFinished.connect(self.update_im_spin_box)
-        self.easeSpinBox.editingFinished.connect(self.update_im_spin_box)
+        qconnect(self.defaultEaseImSpinBox.editingFinished, self.update_im_spin_box)
+        qconnect(self.easeSpinBox.editingFinished, self.update_im_spin_box)
 
-        self.defaultEaseImSpinBox.valueChanged.connect(self.update_im_spin_box)
-        self.easeSpinBox.valueChanged.connect(self.update_im_spin_box)
+        qconnect(self.defaultEaseImSpinBox.valueChanged, self.update_im_spin_box)
+        qconnect(self.easeSpinBox.valueChanged, self.update_im_spin_box)
 
-        self.okButton.clicked.connect(self.on_confirm)
-        self.cancelButton.clicked.connect(self.reject)
-        self.help_button.clicked.connect(lambda: openLink(ANKI_SETUP_GUIDE))
+        qconnect(self.okButton.clicked, self.on_confirm)
+        qconnect(self.cancelButton.clicked, self.reject)
+        qconnect(self.help_button.clicked, lambda: openLink(ANKI_SETUP_GUIDE))
 
     def populate_decks(self) -> None:
         self.deckComboBox.clear()
@@ -219,6 +219,8 @@ class RefoldEaseDialog(DialogUI):
         config['force_after'] = self.forceSyncCheckBox.isChecked()
         config['update_option_groups'] = self.updateGroupsCheckBox.isChecked()
         config['advanced_options'] = self.advanced_opts_groupbox.isChecked()
+        config['new_default_ease'] = self.easeSpinBox.value()
+
         write_config()
 
     @dim_ok_button
@@ -264,7 +266,7 @@ def init():
     # create a new menu item
     action = QAction(menu_label(), mw)
     # set it to call testFunction when it's clicked
-    action.triggered.connect(dialog.show)
+    qconnect(action.triggered, dialog.show)
     # and add it to the tools menu
     mw.form.menuTools.addAction(action)
     # adjust ease factor before review, if enabled
