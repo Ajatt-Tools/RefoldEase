@@ -22,7 +22,7 @@ from typing import List
 
 from aqt import mw
 from aqt.qt import *
-from aqt.utils import showInfo
+from aqt.utils import showInfo, openLink
 
 from . import refoldease
 from .config import config, write_config
@@ -45,6 +45,7 @@ class DialogUI(QDialog):
         self.deckComboBox = QComboBox()
         self.okButton = QPushButton("Ok")
         self.cancelButton = QPushButton("Cancel")
+        self.help_button = QPushButton("Help")
         self.advanced_opts_groupbox = self.create_advanced_options_group()
         self._setup_ui()
 
@@ -59,7 +60,6 @@ class DialogUI(QDialog):
         vbox.addLayout(self.create_deck_group())
         vbox.addWidget(self.advanced_opts_groupbox)
         vbox.addStretch(1)
-        vbox.addWidget(self.create_learn_more_link())
         vbox.addLayout(self.create_bottom_group())
         return vbox
 
@@ -106,17 +106,12 @@ class DialogUI(QDialog):
 
         return vbox
 
-    @staticmethod
-    def create_learn_more_link():
-        label = QLabel('<a href="https://refold.la/roadmap/stage-1/a/anki-setup">Learn more</a>')
-        label.setOpenExternalLinks(True)
-        return label
-
     def create_bottom_group(self):
         hbox = QHBoxLayout()
         hbox.addWidget(self.okButton)
         hbox.addWidget(self.cancelButton)
         hbox.addStretch()
+        hbox.addWidget(self.help_button)
         return hbox
 
     def add_tool_tips(self):
@@ -199,6 +194,7 @@ class RefoldEaseDialog(DialogUI):
 
         self.okButton.clicked.connect(self.on_confirm)
         self.cancelButton.clicked.connect(self.reject)
+        self.help_button.clicked.connect(lambda: openLink(ANKI_SETUP_GUIDE))
 
     def populate_decks(self) -> None:
         self.deckComboBox.clear()
