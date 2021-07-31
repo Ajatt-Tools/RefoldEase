@@ -45,6 +45,7 @@ class DialogUI(QDialog):
         self.deckComboBox = QComboBox()
         self.okButton = QPushButton("Ok")
         self.cancelButton = QPushButton("Cancel")
+        self.advanced_opts_groupbox = self.create_advanced_options_group()
         self._setup_ui()
 
     def _setup_ui(self):
@@ -56,7 +57,7 @@ class DialogUI(QDialog):
         vbox = QVBoxLayout()
         vbox.setSpacing(10)
         vbox.addLayout(self.create_deck_group())
-        vbox.addWidget(self.create_advanced_options_group())
+        vbox.addWidget(self.advanced_opts_groupbox)
         vbox.addStretch(1)
         vbox.addWidget(self.create_learn_more_link())
         vbox.addLayout(self.create_bottom_group())
@@ -71,7 +72,6 @@ class DialogUI(QDialog):
     def create_advanced_options_group(self):
         groupbox = QGroupBox("Advanced Options")
         groupbox.setCheckable(True)
-        groupbox.setChecked(False)
 
         vbox = QVBoxLayout()
         groupbox.setLayout(vbox)
@@ -188,6 +188,7 @@ class RefoldEaseDialog(DialogUI):
         self.syncCheckBox.setChecked(config.get('sync_after_reset', False))
         self.forceSyncCheckBox.setChecked(config.get('force_after', False))
         self.updateGroupsCheckBox.setChecked(config.get('update_option_groups', False))
+        self.advanced_opts_groupbox.setChecked(config.get('advanced_options', False))
 
     def connect_ui_elements(self) -> None:
         self.defaultEaseImSpinBox.editingFinished.connect(self.update_im_spin_box)
@@ -221,6 +222,7 @@ class RefoldEaseDialog(DialogUI):
         config['sync_after_reset'] = self.syncCheckBox.isChecked()
         config['force_after'] = self.forceSyncCheckBox.isChecked()
         config['update_option_groups'] = self.updateGroupsCheckBox.isChecked()
+        config['advanced_options'] = self.advanced_opts_groupbox.isChecked()
         write_config()
 
     @dim_ok_button
