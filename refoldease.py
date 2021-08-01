@@ -173,6 +173,14 @@ def get_decks_info() -> List[Tuple]:
     return result
 
 
+def run(dids: List[int], factor_human: int, im_human: int) -> None:
+    maybe_sync_before()
+    reset_ease(dids, factor_human)
+    maybe_update_groups(dids, factor_human, im_human)
+    notify_done(factor_human)
+    maybe_sync_after()
+
+
 ######################################################################
 # Entry point
 ######################################################################

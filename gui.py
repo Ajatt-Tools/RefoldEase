@@ -227,12 +227,11 @@ class RefoldEaseDialog(DialogUI):
     def on_confirm(self) -> None:
         self.update_global_config()
         try:
-            selected_dids = self.get_selected_dids()
-            refoldease.maybe_sync_before()
-            refoldease.reset_ease(selected_dids, self.easeSpinBox.value())
-            refoldease.maybe_update_groups(selected_dids, self.easeSpinBox.value(), self.imSpinBox.value())
-            refoldease.notify_done(self.easeSpinBox.value())
-            refoldease.maybe_sync_after()
+            refoldease.run(
+                dids=self.get_selected_dids(),
+                factor_human=self.easeSpinBox.value(),
+                im_human=self.imSpinBox.value(),
+            )
         except Exception as ex:
             traceback.print_exc()
             showInfo(
