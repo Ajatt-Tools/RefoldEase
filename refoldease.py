@@ -47,7 +47,8 @@ def maybe_sync_before():
 def maybe_sync_after():
     # force a one-way sync if enabled
     if config.get('force_after') is True:
-        mw.col.mod_schema(check=False)
+        mw.col.scm += 1
+        mw.col.setMod()
 
     # sync after resetting ease if enabled
     if config.get('sync_after_reset') is True:
@@ -85,7 +86,7 @@ def reset_ease_col(dids: List[int], ez_factor: int):
             card_ids.extend(mw.col.db.list("SELECT id FROM cards WHERE factor != 0 AND did = ?", did))
 
     for card_id in card_ids:
-        card = mw.col.get_card(card_id)
+        card = mw.col.getCard(card_id)
         if card.factor != ez_factor:
             card.factor = ez_factor
             card.flush()
@@ -149,7 +150,7 @@ def update_group_settings(group_conf: dict, ease_human, im_human) -> None:
     # default is `1.0`, LowKey target will be `1.92`
     group_conf['rev']['ivlFct'] = ivl_factor_anki(im_human)
 
-    mw.col.decks.set_config_id_for_deck_dict(group_conf, group_conf['id'])
+    mw.col.decks.setConf(group_conf, group_conf['id'])
     print(f"Updated Option Group: {group_conf['name']}.")
 
 
@@ -160,7 +161,7 @@ def maybe_update_groups(dids: List[int], ease_human: int, im_human: int) -> None
     if whole_col_selected(dids):
         dconfs = mw.col.decks.all_config()
     else:
-        dconfs = [mw.col.decks.config_dict_for_deck_id(did) for did in dids]
+        dconfs = [mw.col.decks.confForDid(did) for did in dids]
 
     for dconf in unique(dconfs, 'id'):
         update_group_settings(dconf, ease_human, im_human)
