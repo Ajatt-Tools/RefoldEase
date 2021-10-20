@@ -70,7 +70,7 @@ class DialogUI(QDialog):
 
     def create_deck_selection_group(self):
         hbox = QHBoxLayout()
-        hbox.addWidget(QLabel("Deck:"))
+        hbox.addWidget(QLabel("Deck"))
         hbox.addWidget(self.deckComboBox, stretch=1)
         hbox.addWidget(self.run_button)
         return hbox
@@ -89,18 +89,14 @@ class DialogUI(QDialog):
 
     def create_ease_group(self):
         grid = QGridLayout()
-
-        grid.addWidget(QLabel("Your IM at Ease=250%:"), 1, 0)
-        grid.addWidget(self.defaultEaseImSpinBox, 1, 1)
-        grid.addWidget(QLabel("%"), 1, 2)
-
-        grid.addWidget(QLabel("Desired new Ease:"), 2, 0)
-        grid.addWidget(self.easeSpinBox, 2, 1)
-        grid.addWidget(QLabel("%"), 2, 2)
-
-        grid.addWidget(QLabel("Recommended new IM:"), 3, 0)
-        grid.addWidget(self.imSpinBox, 3, 1)
-        grid.addWidget(QLabel("%"), 3, 2)
+        spinboxes = {
+            "IM multiplier": self.defaultEaseImSpinBox,
+            "Desired new Ease": self.easeSpinBox,
+            "Recommended new IM": self.imSpinBox,
+        }
+        for y_idx, label in enumerate(spinboxes):
+            for h_idx, widget in enumerate((QLabel(label), spinboxes[label], QLabel("%"))):
+                grid.addWidget(widget, y_idx, h_idx)
 
         return grid
 
