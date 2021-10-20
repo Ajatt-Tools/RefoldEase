@@ -32,6 +32,13 @@ from .consts import *
 # UI
 ######################################################################
 
+def expanding_combobox(min_width=200) -> QComboBox:
+    box = QComboBox()
+    box.setMinimumWidth(min_width)
+    box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+    return box
+
+
 class DialogUI(QDialog):
     def __init__(self, *args, **kwargs):
         super().__init__(parent=mw, *args, **kwargs)
@@ -41,11 +48,10 @@ class DialogUI(QDialog):
         self.syncCheckBox = QCheckBox("Sync immediately")
         self.forceSyncCheckBox = QCheckBox("Force sync in one direction")
         self.updateGroupsCheckBox = QCheckBox("Update Options Groups")
-        self.deckComboBox = QComboBox()
-        self.okButton = QPushButton(RUN_BUTTON_TEXT)
-        self.cancelButton = QPushButton("Cancel")
-        self.help_button = QPushButton("Help")
+        self.deckComboBox = expanding_combobox()
+        self.run_button = QPushButton(RUN_BUTTON_TEXT)
         self.advanced_opts_groupbox = self.create_advanced_options_group()
+        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel | QDialogButtonBox.Help)
         self._setup_ui()
 
     def _setup_ui(self):
@@ -56,16 +62,17 @@ class DialogUI(QDialog):
     def setup_outer_layout(self):
         vbox = QVBoxLayout()
         vbox.setSpacing(10)
-        vbox.addLayout(self.create_deck_group())
+        vbox.addLayout(self.create_deck_selection_group())
         vbox.addWidget(self.advanced_opts_groupbox)
         vbox.addStretch(1)
-        vbox.addLayout(self.create_bottom_group())
+        vbox.addWidget(self.button_box)
         return vbox
 
-    def create_deck_group(self):
+    def create_deck_selection_group(self):
         hbox = QHBoxLayout()
         hbox.addWidget(QLabel("Deck:"))
-        hbox.addWidget(self.deckComboBox, 1)
+        hbox.addWidget(self.deckComboBox, stretch=1)
+        hbox.addWidget(self.run_button)
         return hbox
 
     def create_advanced_options_group(self):
@@ -105,14 +112,6 @@ class DialogUI(QDialog):
 
         return vbox
 
-    def create_bottom_group(self):
-        hbox = QHBoxLayout()
-        hbox.addWidget(self.okButton)
-        hbox.addWidget(self.cancelButton)
-        hbox.addStretch()
-        hbox.addWidget(self.help_button)
-        return hbox
-
     def add_tooltips(self):
         self.defaultEaseImSpinBox.setToolTip(
             "Your Interval Modifier when your Starting Ease was 250%.\n"
@@ -144,11 +143,11 @@ def set_enabled_text(button: QPushButton, state: bool, msg: str) -> None:
     button.repaint()
 
 
-def dim_ok_button(f: Callable):
+def dim_run_button(f: Callable):
     def decorator(self: 'RefoldEaseDialog'):
-        set_enabled_text(self.okButton, state=False, msg="Please wait...")
+        set_enabled_text(self.run_button, state=False, msg="Please wait...")
         f(self)
-        set_enabled_text(self.okButton, state=True, msg=RUN_BUTTON_TEXT)
+        set_enabled_text(self.run_button, state=True, msg=RUN_BUTTON_TEXT)
 
     return decorator
 
@@ -191,9 +190,11 @@ class RefoldEaseDialog(DialogUI):
         qconnect(self.defaultEaseImSpinBox.valueChanged, self.update_im_spin_box)
         qconnect(self.easeSpinBox.valueChanged, self.update_im_spin_box)
 
-        qconnect(self.okButton.clicked, self.on_confirm)
-        qconnect(self.cancelButton.clicked, self.reject)
-        qconnect(self.help_button.clicked, lambda: openLink(ANKI_SETUP_GUIDE))
+        qconnect(self.run_button.clicked, self.on_run)
+
+        qconnect(self.button_box.accepted, self.on_confirm)
+        qconnect(self.button_box.rejected, self.reject)
+        qconnect(self.button_box.helpRequested, lambda: openLink(ANKI_SETUP_GUIDE))
 
     def populate_decks(self) -> None:
         self.deckComboBox.clear()
@@ -222,8 +223,12 @@ class RefoldEaseDialog(DialogUI):
 
         write_config()
 
-    @dim_ok_button
-    def on_confirm(self) -> None:
+    def on_confirm(self):
+        self.update_global_config()
+        self.accept()
+
+    @dim_run_button
+    def on_run(self) -> None:
         self.update_global_config()
         try:
             refoldease.run(
@@ -237,7 +242,6 @@ class RefoldEaseDialog(DialogUI):
                 f"Sorry! Couldn't <b>refold</b> ease.<br>{str(ex)}.<br>"
                 "Please <a href=\"https://github.com/Ajatt-Tools/RefoldEase\">fill an issue</a> on Github."
             )
-        self.accept()
 
 
 ######################################################################
