@@ -40,14 +40,23 @@ def expanding_combobox(min_width=200) -> QComboBox:
 
 
 class DialogUI(QDialog):
+    _booleans = (
+        "update_options_groups",
+        "sync_after_reset",
+        "force_sync_in_one_direction",
+        "adjust_ease_when_reviewing",
+    )
+
+    @classmethod
+    def make_checkboxes(cls):
+        return {key: QCheckBox(key.replace('_', ' ').capitalize()) for key in cls._booleans}
+
     def __init__(self, *args, **kwargs):
         super().__init__(parent=mw, *args, **kwargs)
         self.easeSpinBox = QSpinBox()
         self.imSpinBox = QSpinBox()
         self.defaultEaseImSpinBox = QSpinBox()
-        self.syncCheckBox = QCheckBox("Sync immediately")
-        self.forceSyncCheckBox = QCheckBox("Force sync in one direction")
-        self.updateGroupsCheckBox = QCheckBox("Update Options Groups")
+        self.checkboxes = self.make_checkboxes()
         self.deckComboBox = expanding_combobox()
         self.run_button = QPushButton(RUN_BUTTON_TEXT)
         self.advanced_opts_groupbox = self.create_advanced_options_group()
@@ -102,10 +111,8 @@ class DialogUI(QDialog):
 
     def create_check_box_group(self):
         vbox = QVBoxLayout()
-        vbox.addWidget(self.syncCheckBox)
-        vbox.addWidget(self.forceSyncCheckBox)
-        vbox.addWidget(self.updateGroupsCheckBox)
-
+        for widget in self.checkboxes.values():
+            vbox.addWidget(widget)
         return vbox
 
     def add_tooltips(self):
@@ -123,7 +130,7 @@ class DialogUI(QDialog):
         self.imSpinBox.setToolTip(
             "This is your new Interval Modifier after applying this Ease setup."
         )
-        self.updateGroupsCheckBox.setToolTip(
+        self.checkboxes['update_options_groups'].setToolTip(
             "Update Interval Modifier and Starting Ease in every Options Group\n"
             "or just in the Options Group associated with the deck you've selected."
         )
@@ -171,11 +178,13 @@ class RefoldEaseDialog(DialogUI):
         self.imSpinBox.setMaximum(MAX_EASE)
 
     def set_default_values(self) -> None:
+        widget: QCheckBox
+
+        for conf_key, widget in self.checkboxes.items():
+            widget.setChecked(config.get(conf_key, False))
+
         self.defaultEaseImSpinBox.setValue(100)
         self.easeSpinBox.setValue(config.get('new_starting_ease_percent'))
-        self.syncCheckBox.setChecked(config.get('sync_after_reset', False))
-        self.forceSyncCheckBox.setChecked(config.get('force_sync_in_one_direction', False))
-        self.updateGroupsCheckBox.setChecked(config.get('update_options_groups', False))
         self.advanced_opts_groupbox.setChecked(config.get('advanced_options', False))
         self.update_im_spin_box()
 
@@ -211,11 +220,11 @@ class RefoldEaseDialog(DialogUI):
         return selected_dids
 
     def update_global_config(self) -> None:
-        config['sync_after_reset'] = self.syncCheckBox.isChecked()
-        config['force_sync_in_one_direction'] = self.forceSyncCheckBox.isChecked()
-        config['update_options_groups'] = self.updateGroupsCheckBox.isChecked()
-        config['advanced_options'] = self.advanced_opts_groupbox.isChecked()
+        for conf_key, widget in self.checkboxes.items():
+            config[conf_key] = widget.isChecked()
+
         config['new_starting_ease_percent'] = self.easeSpinBox.value()
+        config['advanced_options'] = self.advanced_opts_groupbox.isChecked()
 
         write_config()
 
