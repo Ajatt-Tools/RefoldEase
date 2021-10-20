@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 #
 # RefoldEase add-on for Anki 2.1
 # Copyright (C) 2021  Ren Tatsumoto. <tatsu at autistici.org>
@@ -35,7 +34,7 @@ from .consts import *
 
 class DialogUI(QDialog):
     def __init__(self, *args, **kwargs):
-        super(DialogUI, self).__init__(parent=mw, *args, **kwargs)
+        super().__init__(parent=mw, *args, **kwargs)
         self.easeSpinBox = QSpinBox()
         self.imSpinBox = QSpinBox()
         self.defaultEaseImSpinBox = QSpinBox()
@@ -163,7 +162,7 @@ class RefoldEaseDialog(DialogUI):
         self.connect_ui_elements()
 
     def show(self) -> None:
-        super(RefoldEaseDialog, self).show()
+        super().show()
         self.populate_decks()
 
     def set_minimums(self) -> None:
