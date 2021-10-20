@@ -2,7 +2,7 @@
 
 **Anki needs to be restarted after changing the config.**
 
-* `new_default_ease` - Your desired new Ease. This value should be set to `131`
+* `new_starting_ease_percent` - Your desired new Ease. This value should be set to `131`
 if you're following the new `“Low-key” Low-key Anki` setup,
 or to `250` if you stick to the old `Low-key` setup.
 Learn more about Low Key Anki [here](https://refold.la/roadmap/stage-1/a/anki-setup/).
@@ -22,4 +22,4 @@ and update its `Starting Ease` and `Interval Modifier` after the Ease reset.
 This method may be faster but it always requires a full sync afterwards
 because Anki won't know that card properties have been changed.
 * `adjust_on_review` - Just before you answer each card,
-the add-on checks its Ease factor and sets it back to `new_default_ease` if needed.
+the add-on checks its Ease factor and sets it back to `new_starting_ease_percent` if needed.

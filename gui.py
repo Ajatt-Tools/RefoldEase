@@ -178,7 +178,7 @@ class RefoldEaseDialog(DialogUI):
 
     def set_default_values(self) -> None:
         self.defaultEaseImSpinBox.setValue(100)
-        self.easeSpinBox.setValue(config.get('new_default_ease'))
+        self.easeSpinBox.setValue(config.get('new_starting_ease_percent'))
         self.syncCheckBox.setChecked(config.get('sync_after_reset', False))
         self.forceSyncCheckBox.setChecked(config.get('force_after', False))
         self.updateGroupsCheckBox.setChecked(config.get('update_option_groups', False))
@@ -219,7 +219,7 @@ class RefoldEaseDialog(DialogUI):
         config['force_after'] = self.forceSyncCheckBox.isChecked()
         config['update_option_groups'] = self.updateGroupsCheckBox.isChecked()
         config['advanced_options'] = self.advanced_opts_groupbox.isChecked()
-        config['new_default_ease'] = self.easeSpinBox.value()
+        config['new_starting_ease_percent'] = self.easeSpinBox.value()
 
         write_config()
 
