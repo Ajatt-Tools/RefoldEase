@@ -6,4 +6,4 @@ RUN_BUTTON_TEXT = "Run"
 MIN_EASE = EasePercent(131)
 MAX_EASE = EasePercent(1000)
 ANKI_DEFAULT_EASE = EasePercent(250)
-ANKI_SETUP_GUIDE = 'https://refold.la/roadmap/stage-1/a/anki-setup'
+ANKI_SETUP_GUIDE = 'https://tatsumoto.neocities.org/blog/setting-up-anki.html'
