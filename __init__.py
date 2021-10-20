@@ -15,7 +15,7 @@ Description:
 Usage:
     1. Sync your other devices with AnkiWeb
     2. Run this script from Tools -> Refold Ease...
-    3. If the force_after config option is set below, click "Upload to
+    3. If the force_sync_in_one_direction config option is set below, click "Upload to
        AnkiWeb" on Anki's sync dialog (your other devices can download on
        next sync)
 
@@ -25,7 +25,7 @@ Config option combinations (set them below):
     * Set sync_before_reset and sync_after_reset to True
 
 2. Force sync in one direction after reset
-    * Set sync_after_reset and force_after to True
+    * Set sync_after_reset and force_sync_in_one_direction to True
     * Might as well set sync_before_reset to True as well
 
 3. Seen the reset ease dialog enough times?

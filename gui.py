@@ -174,8 +174,8 @@ class RefoldEaseDialog(DialogUI):
         self.defaultEaseImSpinBox.setValue(100)
         self.easeSpinBox.setValue(config.get('new_starting_ease_percent'))
         self.syncCheckBox.setChecked(config.get('sync_after_reset', False))
-        self.forceSyncCheckBox.setChecked(config.get('force_after', False))
-        self.updateGroupsCheckBox.setChecked(config.get('update_option_groups', False))
+        self.forceSyncCheckBox.setChecked(config.get('force_sync_in_one_direction', False))
+        self.updateGroupsCheckBox.setChecked(config.get('update_options_groups', False))
         self.advanced_opts_groupbox.setChecked(config.get('advanced_options', False))
         self.update_im_spin_box()
 
@@ -212,8 +212,8 @@ class RefoldEaseDialog(DialogUI):
 
     def update_global_config(self) -> None:
         config['sync_after_reset'] = self.syncCheckBox.isChecked()
-        config['force_after'] = self.forceSyncCheckBox.isChecked()
-        config['update_option_groups'] = self.updateGroupsCheckBox.isChecked()
+        config['force_sync_in_one_direction'] = self.forceSyncCheckBox.isChecked()
+        config['update_options_groups'] = self.updateGroupsCheckBox.isChecked()
         config['advanced_options'] = self.advanced_opts_groupbox.isChecked()
         config['new_starting_ease_percent'] = self.easeSpinBox.value()
 
@@ -252,7 +252,7 @@ def menu_label():
     if config.get('sync_before_reset') is True:
         label += " + Sync Before"
     if config.get('sync_after_reset') is True:
-        label += f" + {'Force ' if config.get('force_after') else ''}Sync After"
+        label += f" + {'Force ' if config.get('force_sync_in_one_direction') else ''}Sync After"
 
     return label
 

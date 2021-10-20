@@ -45,7 +45,7 @@ def maybe_sync_before():
 
 def maybe_sync_after():
     # force a one-way sync if enabled
-    if config.get('force_after') is True:
+    if config.get('force_sync_in_one_direction') is True:
         mw.col.mod_schema(check=False)
 
     # sync after resetting ease if enabled
@@ -58,7 +58,7 @@ def notify_done(ez_factor_human: int):
     if not config.get('skip_reset_notification'):
         msg = f"Ease has been reset to {ez_factor_human}%."
         if config.get('sync_after_reset'):
-            msg += f"\nCollection will be synchronized{' in one direction' if config.get('force_after') else ''}."
+            msg += f"\nCollection will be synchronized{' in one direction' if config.get('force_sync_in_one_direction') else ''}."
         msg += "\nDon't forget to check your Interval Modifier and Starting Ease."
         showInfo(msg)
 
@@ -105,8 +105,8 @@ def reset_ease(dids: List[int], ez_factor_human: int = 250):
         reset_ease_col(dids, ez_factor_anki(ez_factor_human))
 
 
-def decide_adjust_on_review(ease_tuple: Tuple[bool, Literal[1, 2, 3, 4]], _: Reviewer, card: Card):
-    if config.get('adjust_on_review', False) is False:
+def adjust_ease(ease_tuple: Tuple[bool, Literal[1, 2, 3, 4]], _: Reviewer, card: Card):
+    if config.get('adjust_ease_when_reviewing') is False:
         # the user disabled the feature
         return ease_tuple
 
@@ -153,7 +153,7 @@ def update_group_settings(group_conf: dict, ease_human, im_human) -> None:
 
 
 def maybe_update_groups(dids: List[int], ease_human: int, im_human: int) -> None:
-    if not config.get('update_option_groups'):
+    if not config.get('update_options_groups'):
         return
 
     if whole_col_selected(dids):
@@ -185,4 +185,4 @@ def run(dids: List[int], factor_human: int, im_human: int) -> None:
 ######################################################################
 
 def init():
-    gui_hooks.reviewer_will_answer_card.append(decide_adjust_on_review)
+    gui_hooks.reviewer_will_answer_card.append(adjust_ease)
