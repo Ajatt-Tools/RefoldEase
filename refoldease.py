@@ -18,11 +18,9 @@
 # Any modifications to this file must keep this entire header intact.
 
 import math
-from typing import Literal, List, Tuple
+from typing import List, Tuple
 
-from anki.cards import Card
-from aqt import mw, gui_hooks
-from aqt.reviewer import Reviewer
+from aqt import mw
 from aqt.utils import showInfo
 
 from .config import config
@@ -105,28 +103,6 @@ def reset_ease(dids: List[int], ez_factor_human: int = 250):
         reset_ease_col(dids, ez_factor_anki(ez_factor_human))
 
 
-def adjust_ease(ease_tuple: Tuple[bool, Literal[1, 2, 3, 4]], _: Reviewer, card: Card):
-    if config.get('adjust_ease_when_reviewing') is False:
-        # the user disabled the feature
-        return ease_tuple
-
-    if card.factor < ez_factor_anki(130):
-        # the card is brand new
-        return ease_tuple
-
-    if not (card.type == 2 and card.queue == 2):
-        # skip cards in learning
-        return ease_tuple
-
-    required_factor = ez_factor_anki(ease_human := config.get('new_default_ease'))
-
-    if required_factor != card.factor:
-        card.factor = required_factor
-        print(f"RefoldEase: Card #{card.id}'s Ease has been adjusted to {ease_human}%.")
-
-    return ease_tuple
-
-
 def adjust_im(new_ease: int, base_im: int = 100) -> int:
     return math.ceil(ANKI_DEFAULT_EASE * base_im / new_ease)
 
@@ -178,11 +154,3 @@ def run(dids: List[int], factor_human: int, im_human: int) -> None:
     maybe_update_groups(dids, factor_human, im_human)
     notify_done(factor_human)
     maybe_sync_after()
-
-
-######################################################################
-# Entry point
-######################################################################
-
-def init():
-    gui_hooks.reviewer_will_answer_card.append(adjust_ease)

@@ -35,7 +35,7 @@ Config option combinations (set them below):
     * Set all four options to False
 """
 
-from . import refoldease, gui
+from . import adjust_when_reviewing, gui
 
-refoldease.init()
+adjust_when_reviewing.init()
 gui.init()
