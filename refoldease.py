@@ -18,7 +18,7 @@
 # Any modifications to this file must keep this entire header intact.
 
 import math
-from typing import List, Tuple, Literal
+from typing import Literal, List, Tuple
 
 from anki.cards import Card
 from aqt import mw, gui_hooks
@@ -118,11 +118,11 @@ def decide_adjust_on_review(ease_tuple: Tuple[bool, Literal[1, 2, 3, 4]], _: Rev
         # skip cards in learning
         return ease_tuple
 
-    required_factor = ez_factor_anki(nde := config.get('new_default_ease'))
+    required_factor = ez_factor_anki(ease_human := config.get('new_default_ease'))
 
     if required_factor != card.factor:
         card.factor = required_factor
-        print(f"RefoldEase: Card #{card.id}'s Ease has been adjusted to {nde}%.")
+        print(f"RefoldEase: Card #{card.id}'s Ease has been adjusted to {ease_human}%.")
 
     return ease_tuple
 
