@@ -42,7 +42,7 @@ class DialogUI(QDialog):
         self.forceSyncCheckBox = QCheckBox("Force sync in one direction")
         self.updateGroupsCheckBox = QCheckBox("Update Options Groups")
         self.deckComboBox = QComboBox()
-        self.okButton = QPushButton("Ok")
+        self.okButton = QPushButton(RUN_BUTTON_TEXT)
         self.cancelButton = QPushButton("Cancel")
         self.help_button = QPushButton("Help")
         self.advanced_opts_groupbox = self.create_advanced_options_group()
@@ -148,7 +148,7 @@ def dim_ok_button(f: Callable):
     def decorator(self: 'RefoldEaseDialog'):
         set_enabled_text(self.okButton, state=False, msg="Please wait...")
         f(self)
-        set_enabled_text(self.okButton, state=True, msg="Ok")
+        set_enabled_text(self.okButton, state=True, msg=RUN_BUTTON_TEXT)
 
     return decorator
 
