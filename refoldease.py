@@ -51,14 +51,24 @@ def maybe_sync_after():
         mw.on_sync_button_clicked()
 
 
-def notify_done(ez_factor_human: int):
-    # show a message box
-    if not config.get('skip_reset_notification'):
-        msg = f"Ease has been reset to {ez_factor_human}%."
-        if config.get('sync_after_reset'):
-            msg += f"\nCollection will be synchronized{' in one direction' if config.get('force_sync_in_one_direction') else ''}."
-        msg += "\nDon't forget to check your Interval Modifier and Starting Ease."
-        showInfo(msg)
+def form_msg() -> str:
+    msg: List[str] = ["Ease has been reset to {}%."]
+
+    if config.get('sync_after_reset'):
+        msg.append("\nCollection will be synchronized")
+        if config.get('force_sync_in_one_direction'):
+            msg.append("in one direction.")
+        else:
+            msg.append(".")
+
+    msg.append("\nDon't forget to check your Interval Modifier and Starting Ease.")
+
+    return ''.join(msg)
+
+
+def maybe_notify_done(ez_factor_human: int):
+    if config.get('show_reset_notification'):
+        showInfo(form_msg().format(ez_factor_human))
 
 
 def whole_col_selected(dids: List[int]) -> bool:
