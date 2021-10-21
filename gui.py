@@ -134,6 +134,19 @@ class DialogUI(QDialog):
             "Update Interval Modifier and Starting Ease in every Options Group\n"
             "or just in the Options Group associated with the deck you've selected."
         )
+        self.checkboxes['sync_after_reset'].setToolTip(
+            "Sync collection when the task is done."
+        )
+        self.checkboxes['force_sync_in_one_direction'].setToolTip(
+            "Mark the collection as needing force sync."
+        )
+        self.checkboxes['adjust_ease_when_reviewing'].setToolTip(
+            "When you review a card, its Ease is going to be adjusted back\n"
+            "to the value you set here, if needed."
+        )
+        self.button_box.button(QDialogButtonBox.Ok).setToolTip("Save settings and close the dialog.")
+        self.button_box.button(QDialogButtonBox.Cancel).setToolTip("Discard settings and close the dialog.")
+        self.button_box.button(QDialogButtonBox.Help).setToolTip("Open the Anki guide.")
 
 
 ######################################################################
