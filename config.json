@@ -4,7 +4,7 @@
   "sync_before_reset": false,
   "sync_after_reset": false,
   "force_sync_in_one_direction": false,
-  "skip_reset_notification": false,
+  "show_reset_notification": true,
   "modify_db_directly": false,
   "adjust_ease_when_reviewing": false,
   "advanced_options": false
