@@ -118,12 +118,10 @@ class DialogUI(QDialog):
     def add_tooltips(self):
         self.defaultEaseImSpinBox.setToolTip(
             "Your Interval Modifier when your Starting Ease was 250%.\n"
-            "You can find it by going to `Deck options` -> `Reviews` -> `Interval Modifier`."
+            "You can find it by going to \"Deck options\" > \"Reviews\" > \"Interval Modifier\"."
         )
         self.easeSpinBox.setToolTip(
-            "Your desired new Ease. This value should be set to `131%`\n"
-            "if you're following the new `“Low-key” Low-key Anki` setup,\n"
-            "or to `250%` if you stick to the old `Low-key` setup.\n\n"
+            "Your desired new Ease. The recommended value is 131%.\n"
             "Note: Because Anki resets Starting Ease back to 250% on each force sync if it's set to 130%,\n"
             "The lowest possible Ease supported by the add-on is 131%."
         )
