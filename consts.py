@@ -5,7 +5,7 @@ from typing import NewType
 
 EasePercent = NewType("EasePercent", int)
 
-ADDON_NAME = "RefoldEase"
+ADDON_NAME = "Refold Ease"
 RUN_BUTTON_TEXT = "Run"
 MIN_EASE = EasePercent(131)
 MAX_EASE = EasePercent(1000)

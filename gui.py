@@ -1,31 +1,15 @@
-#
-# RefoldEase add-on for Anki 2.1
-# Copyright (C) 2021  Ren Tatsumoto. <tatsu at autistici.org>
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#
-# Any modifications to this file must keep this entire header intact.
+# Copyright: Ren Tatsumoto <tatsu at autistici.org>
+# License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from typing import List
+from typing import List, Optional
 
 from aqt import mw
 from aqt.qt import *
-from aqt.utils import showInfo, openLink, restoreGeom, saveGeom
+from aqt.utils import openLink, restoreGeom, saveGeom
 
-from . import refoldease
 from .config import config, write_config
 from .consts import *
+from .refoldease import RefoldEase, get_decks_info, adjust_im
 
 
 ######################################################################
@@ -52,7 +36,7 @@ class DialogUI(QDialog):
         return {key: QCheckBox(key.replace('_', ' ').capitalize()) for key in cls._booleans}
 
     def __init__(self, *args, **kwargs):
-        super().__init__(parent=mw, *args, **kwargs)
+        super().__init__(*args, **kwargs)
         self.easeSpinBox = QSpinBox()
         self.imSpinBox = QSpinBox()
         self.defaultEaseImSpinBox = QSpinBox()
@@ -64,7 +48,7 @@ class DialogUI(QDialog):
         self._setup_ui()
 
     def _setup_ui(self):
-        self.setWindowTitle('Refold Ease')
+        self.setWindowTitle(ADDON_NAME)
         self.setLayout(self.setup_outer_layout())
         self.add_tooltips()
 
@@ -151,28 +135,16 @@ class DialogUI(QDialog):
 # The addon's window
 ######################################################################
 
-def set_enabled_text(button: QPushButton, state: bool, msg: str) -> None:
-    button.setEnabled(state)
-    button.setText(msg)
-    button.repaint()
-
-
-def dim_run_button(f: Callable):
-    def decorator(self: 'RefoldEaseDialog'):
-        set_enabled_text(self.run_button, state=False, msg="Please wait...")
-        f(self)
-        set_enabled_text(self.run_button, state=True, msg=RUN_BUTTON_TEXT)
-
-    return decorator
-
 
 class RefoldEaseDialog(DialogUI):
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.set_minimums()
         self.set_maximums()
         self.set_default_values()
         self.connect_ui_elements()
+        self.thread: Optional[QThread] = None
+        self.worker: Optional[RefoldEase] = None
 
     def show(self) -> None:
         super().show()
@@ -215,11 +187,11 @@ class RefoldEaseDialog(DialogUI):
 
     def populate_decks(self) -> None:
         self.deckComboBox.clear()
-        for deck in refoldease.get_decks_info():
+        for deck in get_decks_info():
             self.deckComboBox.addItem(*deck)
 
     def update_im_spin_box(self) -> None:
-        self.imSpinBox.setValue(refoldease.adjust_im(self.easeSpinBox.value(), self.defaultEaseImSpinBox.value()))
+        self.imSpinBox.setValue(adjust_im(self.easeSpinBox.value(), self.defaultEaseImSpinBox.value()))
 
     def get_selected_dids(self) -> List[int]:
         selected_deck_name = self.deckComboBox.currentText()
@@ -245,46 +217,32 @@ class RefoldEaseDialog(DialogUI):
         saveGeom(self, ADDON_NAME)
         super().accept()
 
-    @dim_run_button
     def on_run(self) -> None:
-        self.update_global_config()
-        try:
-            refoldease.run(
+        if self.run_button.isEnabled():
+            self.update_global_config()
+            self.thread = QThread()
+            self.worker = RefoldEase(
                 dids=self.get_selected_dids(),
                 factor_human=self.easeSpinBox.value(),
                 im_human=self.imSpinBox.value(),
             )
-        except Exception as ex:
-            traceback.print_exc()
-            showInfo(
-                f"Sorry! Couldn't <b>refold</b> ease.<br>{str(ex)}.<br>"
-                "Please <a href=\"https://github.com/Ajatt-Tools/RefoldEase\">fill an issue</a> on Github."
-            )
+            self.worker.moveToThread(self.thread)
+            self.worker.running.connect(lambda running: self.run_button.setEnabled(not running))
+            self.worker.running.connect(lambda running: self.thread.quit() if not running else None)
+            self.thread.started.connect(self.worker.run)
+            self.thread.start()
 
 
 ######################################################################
 # Entry point
 ######################################################################
 
-def menu_label():
-    """Format menu label based on configuration."""
-
-    label = "Refold Ease"
-
-    if config.get('sync_before_reset') is True:
-        label += " + Sync Before"
-    if config.get('sync_after_reset') is True:
-        label += f" + {'Force ' if config.get('force_sync_in_one_direction') else ''}Sync After"
-
-    return label
-
-
-dialog = RefoldEaseDialog()
+dialog = RefoldEaseDialog(parent=mw)
 
 
 def init():
     # create a new menu item
-    action = QAction(menu_label(), mw)
+    action = QAction(ADDON_NAME, mw)
     # set it to call testFunction when it's clicked
     qconnect(action.triggered, dialog.show)
     # and add it to the tools menu

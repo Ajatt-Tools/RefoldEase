@@ -1,26 +1,12 @@
-#
-# RefoldEase add-on for Anki 2.1
-# Copyright (C) 2021  Ren Tatsumoto. <tatsu at autistici.org>
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as
-# published by the Free Software Foundation, either version 3 of the
-# License, or (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <https://www.gnu.org/licenses/>.
-#
-# Any modifications to this file must keep this entire header intact.
+# Copyright: Ren Tatsumoto <tatsu at autistici.org>
+# License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import math
-from typing import List, Tuple
+from typing import List, Tuple, Callable, Iterable
 
+from anki.cards import Card
 from aqt import mw
+from aqt.qt import QObject, pyqtSignal, qconnect
 from aqt.utils import showInfo
 
 from .config import config
@@ -75,27 +61,37 @@ def whole_col_selected(dids: List[int]) -> bool:
     return len(dids) == 1 and dids[0] == whole_collection_id()
 
 
-def reset_ease_db(dids: List[int], ez_factor: int):
+def reset_ease_db(dids: List[int], factor_anki: int):
     if whole_col_selected(dids):
-        mw.col.db.execute("update cards set factor = ?", ez_factor)
+        mw.col.db.execute("update cards set factor = ?", factor_anki)
     else:
         for did in dids:
-            mw.col.db.execute("update cards set factor = ? where did = ?", ez_factor, did)
+            mw.col.db.execute("update cards set factor = ? where did = ?", factor_anki, did)
 
 
-def reset_ease_col(dids: List[int], ez_factor: int):
+def get_cards_by_dids(dids: List[int]) -> Iterable[Card]:
     if whole_col_selected(dids):
         card_ids = mw.col.db.list("SELECT id FROM cards WHERE factor != 0")
     else:
-        card_ids = []
+        card_ids = {}
         for did in dids:
-            card_ids.extend(mw.col.db.list("SELECT id FROM cards WHERE factor != 0 AND did = ?", did))
+            card_ids.update(mw.col.db.list("SELECT id FROM cards WHERE factor != 0 AND did = ?", did))
 
-    for card_id in card_ids:
-        card = mw.col.get_card(card_id)
-        if card.factor != ez_factor:
-            card.factor = ez_factor
+    return (mw.col.get_card(card_id) for card_id in card_ids)
+
+
+def reset_ease_col(dids: List[int], factor_anki: int):
+    for card in get_cards_by_dids(dids):
+        if card.factor != factor_anki:
+            card.factor = factor_anki
             card.flush()
+
+
+def reset_ease(dids: List[int], factor_human: int) -> None:
+    if config.get('modify_db_directly') is True:
+        reset_ease_db(dids, ez_factor_anki(factor_human))
+    else:
+        reset_ease_col(dids, ez_factor_anki(factor_human))
 
 
 def ez_factor_anki(ez_factor_human: int) -> int:
@@ -104,13 +100,6 @@ def ez_factor_anki(ez_factor_human: int) -> int:
 
 def ivl_factor_anki(ivl_fct_human: int) -> float:
     return float(ivl_fct_human / 100)
-
-
-def reset_ease(dids: List[int], ez_factor_human: int = 250):
-    if config.get('modify_db_directly') is True:
-        reset_ease_db(dids, ez_factor_anki(ez_factor_human))
-    else:
-        reset_ease_col(dids, ez_factor_anki(ez_factor_human))
 
 
 def adjust_im(new_ease: int, base_im: int = 100) -> int:
@@ -151,16 +140,42 @@ def maybe_update_groups(dids: List[int], ease_human: int, im_human: int) -> None
         update_group_settings(dconf, ease_human, im_human)
 
 
-def get_decks_info() -> List[Tuple]:
+def get_decks_info() -> List[Tuple[str, int]]:
     decks = sorted(mw.col.decks.all_names_and_ids(), key=lambda deck: deck.name)
-    result = [(deck.name, deck.id) for deck in decks]
-    result.insert(0, ('Whole Collection', whole_collection_id()))
+    result = [('Whole Collection', whole_collection_id()), ]
+    result.extend([(deck.name, deck.id) for deck in decks])
     return result
 
 
-def run(dids: List[int], factor_human: int, im_human: int) -> None:
-    maybe_sync_before()
-    reset_ease(dids, factor_human)
-    maybe_update_groups(dids, factor_human, im_human)
-    notify_done(factor_human)
-    maybe_sync_after()
+def emit_running(func: Callable[["RefoldEase"], None]):
+    def wrapper(self: "RefoldEase"):
+        self.running.emit(True)  # type: ignore
+        func(self)
+        self.running.emit(False)  # type: ignore
+
+    return wrapper
+
+
+class RefoldEase(QObject):
+    running = pyqtSignal(bool)
+
+    def __init__(self, dids: List[int], factor_human: int, im_human: int):
+        super().__init__()
+        self.dids = dids
+        self.factor_human = factor_human
+        self.im_human = im_human
+        qconnect(self.running, self.on_running)
+        maybe_sync_before()
+
+    @emit_running
+    def run(self) -> None:
+        reset_ease(self.dids, self.factor_human)
+        maybe_update_groups(self.dids, self.factor_human, self.im_human)
+
+    def on_running(self, running: bool) -> None:
+        if not running:
+            self.finalize()
+
+    def finalize(self) -> None:
+        maybe_notify_done(self.factor_human)
+        maybe_sync_after()
