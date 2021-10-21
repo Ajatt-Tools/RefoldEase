@@ -21,7 +21,7 @@ from typing import List
 
 from aqt import mw
 from aqt.qt import *
-from aqt.utils import showInfo, openLink
+from aqt.utils import showInfo, openLink, restoreGeom, saveGeom
 
 from . import refoldease
 from .config import config, write_config
@@ -179,6 +179,7 @@ class RefoldEaseDialog(DialogUI):
     def show(self) -> None:
         super().show()
         self.populate_decks()
+        restoreGeom(self, ADDON_NAME)
 
     def set_minimums(self) -> None:
         self.defaultEaseImSpinBox.setMinimum(0)
@@ -210,7 +211,7 @@ class RefoldEaseDialog(DialogUI):
 
         qconnect(self.run_button.clicked, self.on_run)
 
-        qconnect(self.button_box.accepted, self.on_confirm)
+        qconnect(self.button_box.accepted, self.accept)
         qconnect(self.button_box.rejected, self.reject)
         qconnect(self.button_box.helpRequested, lambda: openLink(ANKI_SETUP_GUIDE))
 
@@ -241,9 +242,10 @@ class RefoldEaseDialog(DialogUI):
 
         write_config()
 
-    def on_confirm(self):
+    def accept(self):
         self.update_global_config()
-        self.accept()
+        saveGeom(self, ADDON_NAME)
+        super().accept()
 
     @dim_run_button
     def on_run(self) -> None:
