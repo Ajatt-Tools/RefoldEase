@@ -73,7 +73,7 @@ def get_cards_by_dids(dids: List[int]) -> Iterable[Card]:
     if whole_col_selected(dids):
         card_ids = mw.col.db.list("SELECT id FROM cards WHERE factor != 0")
     else:
-        card_ids = {}
+        card_ids = set()
         for did in dids:
             card_ids.update(mw.col.db.list("SELECT id FROM cards WHERE factor != 0 AND did = ?", did))
 
