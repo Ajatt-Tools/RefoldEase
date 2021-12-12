@@ -2,7 +2,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import math
-from typing import List, Tuple, Callable, Iterable
+from typing import List, Tuple, Callable, Iterable, Dict, Any
 
 from anki.cards import Card
 from aqt import mw
@@ -116,7 +116,7 @@ def unique(_list: List[dict], key) -> List[dict]:
     return result
 
 
-def update_group_settings(group_conf: dict, ease_human, im_human) -> None:
+def update_group_settings(group_conf: Dict[str, Any], ease_human: int, im_human: int) -> None:
     # default = `2500`, LowKey target will be `1310`
     group_conf['new']['initialFactor'] = ez_factor_anki(ease_human)
 
