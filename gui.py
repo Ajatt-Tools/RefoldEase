@@ -241,10 +241,13 @@ dialog = RefoldEaseDialog(parent=mw)
 
 
 def init():
+    from .ajt_common import menu_root_entry
+    root_menu = menu_root_entry()
+
     # create a new menu item
-    action = QAction(ADDON_NAME, mw)
+    action = QAction(ADDON_NAME, root_menu)
     # set it to call testFunction when it's clicked
     qconnect(action.triggered, dialog.show)
     # and add it to the tools menu
-    mw.form.menuTools.addAction(action)
+    root_menu.addAction(action)
     # adjust ease factor before review, if enabled
