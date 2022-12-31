@@ -1,8 +1,6 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from typing import Tuple
-
 from anki.cards import Card
 from aqt import gui_hooks
 from aqt.reviewer import Reviewer
@@ -35,7 +33,7 @@ def adjust_ease(card: Card) -> None:
         print(f"RefoldEase: Card #{card.id}'s Ease has been adjusted to {required_factor_human}%.")
 
 
-def on_reviewer_will_answer_card(ease_tuple: Tuple, _reviewer: Reviewer, card: Card) -> Tuple:
+def on_reviewer_will_answer_card(ease_tuple: tuple, _reviewer: Reviewer, card: Card) -> tuple:
     adjust_ease(card)
     return ease_tuple
 

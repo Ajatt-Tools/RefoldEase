@@ -1,13 +1,13 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
-from typing import List, Optional
+from typing import Optional
 
 from aqt import mw
 from aqt.qt import *
 from aqt.utils import openLink, restoreGeom, saveGeom
 
-from .config import config, write_config
+from .config import config
 from .consts import *
 from .refoldease import RefoldEase, get_decks_info, adjust_im
 
@@ -19,7 +19,7 @@ from .refoldease import RefoldEase, get_decks_info, adjust_im
 def expanding_combobox(min_width=200) -> QComboBox:
     box = QComboBox()
     box.setMinimumWidth(min_width)
-    box.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+    box.setSizePolicy(QSizePolicy.Policy.Expanding, QSizePolicy.Policy.Expanding)
     return box
 
 
@@ -44,7 +44,7 @@ class DialogUI(QDialog):
         self.deckComboBox = expanding_combobox()
         self.run_button = QPushButton(RUN_BUTTON_TEXT)
         self.advanced_opts_groupbox = self.create_advanced_options_group()
-        self.button_box = QDialogButtonBox(QDialogButtonBox.Ok | QDialogButtonBox.Cancel | QDialogButtonBox.Help)
+        self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel | QDialogButtonBox.StandardButton.Help)
         self._setup_ui()
 
     def _setup_ui(self):
@@ -126,9 +126,9 @@ class DialogUI(QDialog):
             "When you review a card, its Ease is going to be adjusted back\n"
             "to the value you set here, if needed."
         )
-        self.button_box.button(QDialogButtonBox.Ok).setToolTip("Save settings and close the dialog.")
-        self.button_box.button(QDialogButtonBox.Cancel).setToolTip("Discard settings and close the dialog.")
-        self.button_box.button(QDialogButtonBox.Help).setToolTip("Open the Anki guide.")
+        self.button_box.button(QDialogButtonBox.StandardButton.Ok).setToolTip("Save settings and close the dialog.")
+        self.button_box.button(QDialogButtonBox.StandardButton.Cancel).setToolTip("Discard settings and close the dialog.")
+        self.button_box.button(QDialogButtonBox.StandardButton.Help).setToolTip("Open the Anki guide.")
 
 
 ######################################################################
@@ -193,7 +193,7 @@ class RefoldEaseDialog(DialogUI):
     def update_im_spin_box(self) -> None:
         self.imSpinBox.setValue(adjust_im(self.easeSpinBox.value(), self.defaultEaseImSpinBox.value()))
 
-    def get_selected_dids(self) -> List[int]:
+    def get_selected_dids(self) -> list[int]:
         selected_deck_name = self.deckComboBox.currentText()
         selected_dids = [self.deckComboBox.currentData()]
 
@@ -210,7 +210,7 @@ class RefoldEaseDialog(DialogUI):
         config['new_starting_ease_percent'] = self.easeSpinBox.value()
         config['advanced_options'] = self.advanced_opts_groupbox.isChecked()
 
-        write_config()
+        config.write_config()
 
     def accept(self):
         self.update_global_config()
@@ -229,7 +229,7 @@ class RefoldEaseDialog(DialogUI):
             self.worker.moveToThread(self.thread)
             self.worker.running.connect(lambda running: self.run_button.setEnabled(not running))
             self.worker.running.connect(lambda running: self.thread.quit() if not running else None)
-            self.thread.started.connect(self.worker.run)
+            self.thread.started.connect(self.worker.run)  # type:ignore
             self.thread.start()
 
 
@@ -241,7 +241,8 @@ dialog = RefoldEaseDialog(parent=mw)
 
 
 def init():
-    from .ajt_common import menu_root_entry
+    from .ajt_common.about_menu import menu_root_entry
+
     root_menu = menu_root_entry()
 
     # create a new menu item

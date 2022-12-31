@@ -2,7 +2,7 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import math
-from typing import List, Tuple, Callable, Iterable, Dict, Any
+from typing import Callable, Iterable, Any
 
 from anki.cards import Card
 from aqt import mw
@@ -38,7 +38,7 @@ def maybe_sync_after():
 
 
 def form_msg() -> str:
-    msg: List[str] = ["Ease has been reset to {}%."]
+    msg: list[str] = ["Ease has been reset to {}%."]
 
     if config.get('sync_after_reset'):
         msg.append("\nCollection will be synchronized")
@@ -57,11 +57,11 @@ def maybe_notify_done(ez_factor_human: int):
         showInfo(form_msg().format(ez_factor_human))
 
 
-def whole_col_selected(dids: List[int]) -> bool:
+def whole_col_selected(dids: list[int]) -> bool:
     return len(dids) == 1 and dids[0] == whole_collection_id()
 
 
-def reset_ease_db(dids: List[int], factor_anki: int):
+def reset_ease_db(dids: list[int], factor_anki: int):
     if whole_col_selected(dids):
         mw.col.db.execute("update cards set factor = ?", factor_anki)
     else:
@@ -69,7 +69,7 @@ def reset_ease_db(dids: List[int], factor_anki: int):
             mw.col.db.execute("update cards set factor = ? where did = ?", factor_anki, did)
 
 
-def get_cards_by_dids(dids: List[int]) -> Iterable[Card]:
+def get_cards_by_dids(dids: list[int]) -> Iterable[Card]:
     if whole_col_selected(dids):
         card_ids = mw.col.db.list("SELECT id FROM cards WHERE factor != 0")
     else:
@@ -80,14 +80,14 @@ def get_cards_by_dids(dids: List[int]) -> Iterable[Card]:
     return (mw.col.get_card(card_id) for card_id in card_ids)
 
 
-def reset_ease_col(dids: List[int], factor_anki: int):
+def reset_ease_col(dids: list[int], factor_anki: int):
     for card in get_cards_by_dids(dids):
         if card.factor != factor_anki:
             card.factor = factor_anki
             card.flush()
 
 
-def reset_ease(dids: List[int], factor_human: int) -> None:
+def reset_ease(dids: list[int], factor_human: int) -> None:
     if config.get('modify_db_directly') is True:
         reset_ease_db(dids, ez_factor_anki(factor_human))
     else:
@@ -106,7 +106,7 @@ def adjust_im(new_ease: int, base_im: int = 100) -> int:
     return math.ceil(ANKI_DEFAULT_EASE * base_im / new_ease)
 
 
-def unique(_list: List[dict], key) -> List[dict]:
+def unique(_list: list[dict], key) -> list[dict]:
     added_ids = set()
     result = []
     for item in _list:
@@ -116,7 +116,7 @@ def unique(_list: List[dict], key) -> List[dict]:
     return result
 
 
-def update_group_settings(group_conf: Dict[str, Any], ease_human: int, im_human: int) -> None:
+def update_group_settings(group_conf: dict[str, Any], ease_human: int, im_human: int) -> None:
     # default = `2500`, LowKey target will be `1310`
     group_conf['new']['initialFactor'] = ez_factor_anki(ease_human)
 
@@ -127,7 +127,7 @@ def update_group_settings(group_conf: Dict[str, Any], ease_human: int, im_human:
     print(f"Updated Option Group: {group_conf['name']}.")
 
 
-def maybe_update_groups(dids: List[int], ease_human: int, im_human: int) -> None:
+def maybe_update_groups(dids: list[int], ease_human: int, im_human: int) -> None:
     if not config.get('update_options_groups'):
         return
 
@@ -140,7 +140,7 @@ def maybe_update_groups(dids: List[int], ease_human: int, im_human: int) -> None
         update_group_settings(dconf, ease_human, im_human)
 
 
-def get_decks_info() -> List[Tuple[str, int]]:
+def get_decks_info() -> list[tuple[str, int]]:
     decks = sorted(mw.col.decks.all_names_and_ids(), key=lambda deck: deck.name)
     result = [('Whole Collection', whole_collection_id()), ]
     result.extend([(deck.name, deck.id) for deck in decks])
@@ -159,7 +159,7 @@ def emit_running(func: Callable[["RefoldEase"], None]):
 class RefoldEase(QObject):
     running = pyqtSignal(bool)
 
-    def __init__(self, dids: List[int], factor_human: int, im_human: int):
+    def __init__(self, dids: list[int], factor_human: int, im_human: int):
         super().__init__()
         self.dids = dids
         self.factor_human = factor_human
