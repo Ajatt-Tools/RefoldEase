@@ -2,9 +2,10 @@
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
 import math
-from typing import Callable, Iterable, Any
+from typing import Callable, Iterable
 
 from anki.cards import Card
+from anki.decks import DeckConfigDict
 from aqt import mw
 from aqt.qt import QObject, pyqtSignal, qconnect
 from aqt.utils import showInfo
@@ -105,17 +106,7 @@ def adjust_im(new_ease: int, base_im: int = 100) -> int:
     return math.ceil(ANKI_DEFAULT_EASE * base_im / new_ease)
 
 
-def unique(_list: list[dict], key) -> list[dict]:
-    added_ids = set()
-    result = []
-    for item in _list:
-        if not item[key] in added_ids:
-            result.append(item)
-            added_ids.add(item['id'])
-    return result
-
-
-def update_group_settings(group_conf: dict[str, Any], ease_human: int, im_human: int) -> None:
+def update_group_settings(group_conf: DeckConfigDict, ease_human: int, im_human: int) -> None:
     # default = `2500`, LowKey target will be `1310`
     group_conf['new']['initialFactor'] = ez_factor_anki(ease_human)
 
@@ -124,6 +115,10 @@ def update_group_settings(group_conf: dict[str, Any], ease_human: int, im_human:
 
     mw.col.decks.set_config_id_for_deck_dict(group_conf, group_conf['id'])
     print(f"Updated Option Group: {group_conf['name']}.")
+
+
+def unique_options_groups(deck_confs: list[DeckConfigDict]) -> Iterable[DeckConfigDict]:
+    return {group['id']: group for group in deck_confs}.values()
 
 
 def maybe_update_groups(decks: list[DeckNameId], ease_human: int, im_human: int) -> None:
@@ -135,7 +130,7 @@ def maybe_update_groups(decks: list[DeckNameId], ease_human: int, im_human: int)
     else:
         dconfs = [mw.col.decks.config_dict_for_deck_id(deck.id) for deck in decks]
 
-    for dconf in unique(dconfs, 'id'):
+    for dconf in unique_options_groups(dconfs):
         update_group_settings(dconf, ease_human, im_human)
 
 
