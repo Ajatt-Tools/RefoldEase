@@ -84,7 +84,8 @@ def reset_ease_col(decks: list[DeckNameId], factor_anki: int):
         if card.factor != factor_anki:
             card.factor = factor_anki
             to_update.append(card)
-    return mw.col.update_cards(to_update)
+    mw.col.update_cards(to_update)
+    print(f"Changed ease for {len(to_update)} cards.")
 
 
 def reset_ease(decks: list[DeckNameId], factor_human: int) -> None:
