@@ -15,7 +15,7 @@ def is_review(card: Card) -> bool:
 
 def should_adjust_ease(card: Card) -> bool:
     return all((
-        config.get('adjust_ease_when_reviewing') is True,
+        config['adjust_ease_when_reviewing'] is True,
         card.factor >= ez_factor_anki(130),
         is_review(card),
     ))
@@ -25,7 +25,7 @@ def adjust_ease(card: Card) -> None:
     if not should_adjust_ease(card):
         return
 
-    required_factor_human = config.get('new_starting_ease_percent')
+    required_factor_human = config['new_starting_ease_percent']
     required_factor_anki = ez_factor_anki(required_factor_human)
 
     if card.factor != required_factor_anki:

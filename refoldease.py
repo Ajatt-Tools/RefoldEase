@@ -23,17 +23,17 @@ def whole_collection_id() -> int:
 
 def maybe_sync_before():
     # sync before resetting ease, if enabled
-    if config.get('sync_before_reset') is True:
+    if config['sync_before_reset'] is True:
         mw.on_sync_button_clicked()
 
 
 def maybe_sync_after():
     # force a one-way sync if enabled
-    if config.get('force_sync_in_one_direction') is True:
+    if config['force_sync_in_one_direction'] is True:
         mw.col.mod_schema(check=False)
 
     # sync after resetting ease if enabled
-    if config.get('sync_after_reset') is True:
+    if config['sync_after_reset'] is True:
         mw.on_sync_button_clicked()
 
 
@@ -42,7 +42,7 @@ def form_msg() -> str:
 
     if config.get('sync_after_reset'):
         msg.append("\nCollection will be synchronized")
-        if config.get('force_sync_in_one_direction'):
+        if config['force_sync_in_one_direction']:
             msg.append("in one direction.")
         else:
             msg.append(".")
@@ -53,7 +53,7 @@ def form_msg() -> str:
 
 
 def maybe_notify_done(ez_factor_human: int):
-    if config.get('show_reset_notification'):
+    if config['show_reset_notification']:
         showInfo(form_msg().format(ez_factor_human))
 
 
@@ -88,7 +88,7 @@ def reset_ease_col(dids: list[int], factor_anki: int):
 
 
 def reset_ease(dids: list[int], factor_human: int) -> None:
-    if config.get('modify_db_directly') is True:
+    if config['modify_db_directly'] is True:
         reset_ease_db(dids, ez_factor_anki(factor_human))
     else:
         reset_ease_col(dids, ez_factor_anki(factor_human))
@@ -128,7 +128,7 @@ def update_group_settings(group_conf: dict[str, Any], ease_human: int, im_human:
 
 
 def maybe_update_groups(dids: list[int], ease_human: int, im_human: int) -> None:
-    if not config.get('update_options_groups'):
+    if not config['update_options_groups']:
         return
 
     if whole_col_selected(dids):
