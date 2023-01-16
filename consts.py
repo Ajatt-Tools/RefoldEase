@@ -3,6 +3,8 @@
 
 from typing import NewType
 
+from anki.decks import DeckNameId
+
 EasePercent = NewType("EasePercent", int)
 
 ADDON_NAME = "Refold Ease"
@@ -11,3 +13,4 @@ MIN_EASE = EasePercent(131)
 MAX_EASE = EasePercent(1000)
 ANKI_DEFAULT_EASE = EasePercent(250)
 ANKI_SETUP_GUIDE = 'https://tatsumoto.neocities.org/blog/setting-up-anki.html'
+WHOLE_COLLECTION = DeckNameId(name='Whole Collection', id=-1)  # A fake DeckNameId. Used for comparing.

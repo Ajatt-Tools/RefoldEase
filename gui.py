@@ -208,7 +208,7 @@ class RefoldEaseDialog(DialogUI):
     def populate_decks(self) -> None:
         self._deck_combobox.clear()
         for deck in get_decks_info():
-            self._deck_combobox.addItem(*deck)
+            self._deck_combobox.addItem(deck.name, deck)
 
     def update_im_spin_box(self) -> None:
         self._recommended_new_im_spinbox.setValue(
@@ -218,15 +218,17 @@ class RefoldEaseDialog(DialogUI):
             )
         )
 
-    def get_selected_dids(self) -> list[int]:
-        selected_deck_name = self._deck_combobox.currentText()
-        selected_dids = [self._deck_combobox.currentData()]
-
-        for deck in mw.col.decks.all_names_and_ids():
-            if deck.name.startswith(selected_deck_name + "::"):
-                selected_dids.append(deck.id)
-
-        return selected_dids
+    def collect_selected_decks(self) -> list[DeckNameId]:
+        """Returns selected deck and its subdecks."""
+        selected_deck: DeckNameId = self._deck_combobox.currentData()
+        result = [selected_deck, ]
+        if selected_deck is not WHOLE_COLLECTION:
+            result.extend([
+                deck
+                for deck in mw.col.decks.all_names_and_ids()
+                if deck.name.startswith(f"{selected_deck.name}::")
+            ])
+        return result
 
     def update_global_config(self) -> None:
         for conf_key, widget in self._checkboxes.items():
@@ -256,7 +258,7 @@ class RefoldEaseDialog(DialogUI):
             self.update_global_config()
             self.thread = QThread()
             self.worker = RefoldEase(
-                dids=self.get_selected_dids(),
+                decks=self.collect_selected_decks(),
                 factor_human=self._desired_new_ease_spinbox.value(),
                 im_human=self._recommended_new_im_spinbox.value(),
             )
