@@ -78,10 +78,12 @@ def get_cards_by_dids(decks: list[DeckNameId]) -> Iterable[Card]:
 
 
 def reset_ease_col(decks: list[DeckNameId], factor_anki: int):
+    to_update: list[Card] = []
     for card in get_cards_by_dids(decks):
         if card.factor != factor_anki:
             card.factor = factor_anki
-            card.flush()
+            to_update.append(card)
+    return mw.col.update_cards(to_update)
 
 
 def reset_ease(decks: list[DeckNameId], factor_human: int) -> None:
