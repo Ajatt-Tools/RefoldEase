@@ -183,7 +183,7 @@ class RefoldEaseDialog(DialogUI):
         for conf_key, widget in self._checkboxes.items():
             widget.setChecked(c.get(conf_key, False))
 
-        self._im_at_250_ease_spinbox.setValue(100)
+        self._im_at_250_ease_spinbox.setValue(c['im_multiplier'])
         self._advanced_opts_groupbox.setChecked(c['advanced_options'])
         self._desired_new_ease_spinbox.setValue(c['new_starting_ease_percent'])
         self.update_im_spin_box()
@@ -232,6 +232,7 @@ class RefoldEaseDialog(DialogUI):
         for conf_key, widget in self._checkboxes.items():
             config[conf_key] = widget.isChecked()
 
+        config['im_multiplier'] = self._im_at_250_ease_spinbox.value()
         config['new_starting_ease_percent'] = self._desired_new_ease_spinbox.value()
         config['advanced_options'] = self._advanced_opts_groupbox.isChecked()
 
