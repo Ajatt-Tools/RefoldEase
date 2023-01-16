@@ -1,12 +1,14 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+from gettext import gettext as _
 from typing import Optional
 
 from aqt import mw
 from aqt.qt import *
 from aqt.utils import openLink, restoreGeom, saveGeom
 
+from .ajt_common.addon_config import AddonConfigManager
 from .config import config
 from .consts import *
 from .refoldease import RefoldEase, get_decks_info, adjust_im
@@ -37,14 +39,21 @@ class DialogUI(QDialog):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.easeSpinBox = QSpinBox()
-        self.imSpinBox = QSpinBox()
-        self.defaultEaseImSpinBox = QSpinBox()
-        self.checkboxes = self.make_checkboxes()
-        self.deckComboBox = expanding_combobox()
-        self.run_button = QPushButton(RUN_BUTTON_TEXT)
-        self.advanced_opts_groupbox = self.create_advanced_options_group()
-        self.button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok | QDialogButtonBox.StandardButton.Cancel | QDialogButtonBox.StandardButton.Help)
+        self._desired_new_ease_spinbox = QSpinBox()
+        self._recommended_new_im_spinbox = QSpinBox()
+        self._im_at_250_ease_spinbox = QSpinBox()
+        self._checkboxes = self.make_checkboxes()
+        self._deck_combobox = expanding_combobox()
+        self._run_button = QPushButton(RUN_BUTTON_TEXT)
+        self._advanced_opts_groupbox = self.create_advanced_options_group()
+        self._button_box = QDialogButtonBox(
+            QDialogButtonBox.StandardButton.Ok |
+            QDialogButtonBox.StandardButton.Cancel |
+            QDialogButtonBox.StandardButton.Help
+        )
+        self._restore_settings_button = self._button_box.addButton(
+            _("Restore &Defaults"), QDialogButtonBox.ButtonRole.ResetRole
+        )
         self._setup_ui()
 
     def _setup_ui(self):
@@ -56,16 +65,16 @@ class DialogUI(QDialog):
         vbox = QVBoxLayout()
         vbox.setSpacing(10)
         vbox.addLayout(self.create_deck_selection_group())
-        vbox.addWidget(self.advanced_opts_groupbox)
+        vbox.addWidget(self._advanced_opts_groupbox)
         vbox.addStretch(1)
-        vbox.addWidget(self.button_box)
+        vbox.addWidget(self._button_box)
         return vbox
 
     def create_deck_selection_group(self):
         hbox = QHBoxLayout()
         hbox.addWidget(QLabel("Deck"))
-        hbox.addWidget(self.deckComboBox, stretch=1)
-        hbox.addWidget(self.run_button)
+        hbox.addWidget(self._deck_combobox, stretch=1)
+        hbox.addWidget(self._run_button)
         return hbox
 
     def create_advanced_options_group(self):
@@ -83,9 +92,9 @@ class DialogUI(QDialog):
     def create_ease_group(self):
         grid = QGridLayout()
         spinboxes = {
-            "IM multiplier": self.defaultEaseImSpinBox,
-            "Desired new Ease": self.easeSpinBox,
-            "Recommended new IM": self.imSpinBox,
+            "IM multiplier": self._im_at_250_ease_spinbox,
+            "Desired new Ease": self._desired_new_ease_spinbox,
+            "Recommended new IM": self._recommended_new_im_spinbox,
         }
         for y_idx, label in enumerate(spinboxes):
             for h_idx, widget in enumerate((QLabel(label), spinboxes[label], QLabel("%"))):
@@ -95,40 +104,47 @@ class DialogUI(QDialog):
 
     def create_check_box_group(self):
         vbox = QVBoxLayout()
-        for widget in self.checkboxes.values():
+        for widget in self._checkboxes.values():
             vbox.addWidget(widget)
         return vbox
 
     def add_tooltips(self):
-        self.defaultEaseImSpinBox.setToolTip(
+        self._im_at_250_ease_spinbox.setToolTip(
             "Your Interval Modifier when your Starting Ease was 250%.\n"
             "You can find it by going to \"Deck options\" > \"Reviews\" > \"Interval Modifier\"."
         )
-        self.easeSpinBox.setToolTip(
+        self._desired_new_ease_spinbox.setToolTip(
             "Your desired new Ease. The recommended value is 131%.\n"
             "Note: Because Anki resets Starting Ease back to 250% on each force sync if it's set to 130%,\n"
             "The lowest possible Ease supported by the add-on is 131%."
         )
-        self.imSpinBox.setToolTip(
-            "This is your new Interval Modifier after applying this Ease setup."
+        self._recommended_new_im_spinbox.setToolTip(
+            "This is your new Interval Modifier after applying this Ease setup.\n\n"
+            "The value updates automatically. Change IM multiplier to control it."
         )
-        self.checkboxes['update_options_groups'].setToolTip(
+        self._checkboxes['update_options_groups'].setToolTip(
             "Update Interval Modifier and Starting Ease in every Options Group\n"
             "or just in the Options Group associated with the deck you've selected."
         )
-        self.checkboxes['sync_after_reset'].setToolTip(
+        self._checkboxes['sync_after_reset'].setToolTip(
             "Sync collection when the task is done."
         )
-        self.checkboxes['force_sync_in_one_direction'].setToolTip(
+        self._checkboxes['force_sync_in_one_direction'].setToolTip(
             "Mark the collection as needing force sync."
         )
-        self.checkboxes['adjust_ease_when_reviewing'].setToolTip(
+        self._checkboxes['adjust_ease_when_reviewing'].setToolTip(
             "When you review a card, its Ease is going to be adjusted back\n"
             "to the value you set here, if needed."
         )
-        self.button_box.button(QDialogButtonBox.StandardButton.Ok).setToolTip("Save settings and close the dialog.")
-        self.button_box.button(QDialogButtonBox.StandardButton.Cancel).setToolTip("Discard settings and close the dialog.")
-        self.button_box.button(QDialogButtonBox.StandardButton.Help).setToolTip("Open the Anki guide.")
+        self._button_box.button(QDialogButtonBox.StandardButton.Ok).setToolTip(
+            "Save settings and close the dialog."
+        )
+        self._button_box.button(QDialogButtonBox.StandardButton.Cancel).setToolTip(
+            "Discard settings and close the dialog."
+        )
+        self._button_box.button(QDialogButtonBox.StandardButton.Help).setToolTip(
+            "Open the Anki guide."
+        )
 
 
 ######################################################################
@@ -141,7 +157,7 @@ class RefoldEaseDialog(DialogUI):
         super().__init__(*args, **kwargs)
         self.set_minimums()
         self.set_maximums()
-        self.set_default_values()
+        self.set_default_values(config)
         self.connect_ui_elements()
         self.thread: Optional[QThread] = None
         self.worker: Optional[RefoldEase] = None
@@ -152,50 +168,59 @@ class RefoldEaseDialog(DialogUI):
         restoreGeom(self, ADDON_NAME)
 
     def set_minimums(self) -> None:
-        self.defaultEaseImSpinBox.setMinimum(0)
-        self.imSpinBox.setMinimum(0)
-        self.easeSpinBox.setMinimum(MIN_EASE)
+        self._im_at_250_ease_spinbox.setMinimum(0)
+        self._recommended_new_im_spinbox.setMinimum(0)
+        self._desired_new_ease_spinbox.setMinimum(MIN_EASE)
 
     def set_maximums(self) -> None:
-        self.defaultEaseImSpinBox.setMaximum(MAX_EASE)
-        self.easeSpinBox.setMaximum(MAX_EASE)
-        self.imSpinBox.setMaximum(MAX_EASE)
+        self._im_at_250_ease_spinbox.setMaximum(MAX_EASE)
+        self._desired_new_ease_spinbox.setMaximum(MAX_EASE)
+        self._recommended_new_im_spinbox.setMaximum(MAX_EASE)
 
-    def set_default_values(self) -> None:
+    def set_default_values(self, c: AddonConfigManager) -> None:
         widget: QCheckBox
 
-        for conf_key, widget in self.checkboxes.items():
-            widget.setChecked(config.get(conf_key, False))
+        for conf_key, widget in self._checkboxes.items():
+            widget.setChecked(c.get(conf_key, False))
 
-        self.defaultEaseImSpinBox.setValue(100)
-        self.easeSpinBox.setValue(config.get('new_starting_ease_percent'))
-        self.advanced_opts_groupbox.setChecked(config.get('advanced_options', False))
+        self._im_at_250_ease_spinbox.setValue(100)
+        self._advanced_opts_groupbox.setChecked(c['advanced_options'])
+        self._desired_new_ease_spinbox.setValue(c['new_starting_ease_percent'])
         self.update_im_spin_box()
 
     def connect_ui_elements(self) -> None:
-        qconnect(self.defaultEaseImSpinBox.editingFinished, self.update_im_spin_box)
-        qconnect(self.easeSpinBox.editingFinished, self.update_im_spin_box)
+        qconnect(self._im_at_250_ease_spinbox.editingFinished, self.update_im_spin_box)
+        qconnect(self._desired_new_ease_spinbox.editingFinished, self.update_im_spin_box)
 
-        qconnect(self.defaultEaseImSpinBox.valueChanged, self.update_im_spin_box)
-        qconnect(self.easeSpinBox.valueChanged, self.update_im_spin_box)
+        qconnect(self._im_at_250_ease_spinbox.valueChanged, self.update_im_spin_box)
+        qconnect(self._desired_new_ease_spinbox.valueChanged, self.update_im_spin_box)
 
-        qconnect(self.run_button.clicked, self.on_run)
+        qconnect(self._run_button.clicked, self.on_run)
 
-        qconnect(self.button_box.accepted, self.accept)
-        qconnect(self.button_box.rejected, self.reject)
-        qconnect(self.button_box.helpRequested, lambda: openLink(ANKI_SETUP_GUIDE))
+        qconnect(self._button_box.accepted, self.accept)
+        qconnect(self._button_box.rejected, self.reject)
+        qconnect(self._button_box.helpRequested, lambda: openLink(ANKI_SETUP_GUIDE))
+        qconnect(
+            self._restore_settings_button.clicked,
+            lambda: self.set_default_values(AddonConfigManager(default=True))
+        )
 
     def populate_decks(self) -> None:
-        self.deckComboBox.clear()
+        self._deck_combobox.clear()
         for deck in get_decks_info():
-            self.deckComboBox.addItem(*deck)
+            self._deck_combobox.addItem(*deck)
 
     def update_im_spin_box(self) -> None:
-        self.imSpinBox.setValue(adjust_im(self.easeSpinBox.value(), self.defaultEaseImSpinBox.value()))
+        self._recommended_new_im_spinbox.setValue(
+            adjust_im(
+                new_ease=self._desired_new_ease_spinbox.value(),
+                base_im=self._im_at_250_ease_spinbox.value()
+            )
+        )
 
     def get_selected_dids(self) -> list[int]:
-        selected_deck_name = self.deckComboBox.currentText()
-        selected_dids = [self.deckComboBox.currentData()]
+        selected_deck_name = self._deck_combobox.currentText()
+        selected_dids = [self._deck_combobox.currentData()]
 
         for deck in mw.col.decks.all_names_and_ids():
             if deck.name.startswith(selected_deck_name + "::"):
@@ -204,30 +229,38 @@ class RefoldEaseDialog(DialogUI):
         return selected_dids
 
     def update_global_config(self) -> None:
-        for conf_key, widget in self.checkboxes.items():
+        for conf_key, widget in self._checkboxes.items():
             config[conf_key] = widget.isChecked()
 
-        config['new_starting_ease_percent'] = self.easeSpinBox.value()
-        config['advanced_options'] = self.advanced_opts_groupbox.isChecked()
+        config['new_starting_ease_percent'] = self._desired_new_ease_spinbox.value()
+        config['advanced_options'] = self._advanced_opts_groupbox.isChecked()
 
         config.write_config()
 
+    def done(self, *args, **kwargs) -> None:
+        saveGeom(self, ADDON_NAME)
+        return super().done(*args, **kwargs)
+
     def accept(self):
         self.update_global_config()
-        saveGeom(self, ADDON_NAME)
-        super().accept()
+        return super().accept()
+
+    def reject(self):
+        # If the user tweaked config parameters, set them to the previous values.
+        self.set_default_values(config)
+        return super().reject()
 
     def on_run(self) -> None:
-        if self.run_button.isEnabled():
+        if self._run_button.isEnabled():
             self.update_global_config()
             self.thread = QThread()
             self.worker = RefoldEase(
                 dids=self.get_selected_dids(),
-                factor_human=self.easeSpinBox.value(),
-                im_human=self.imSpinBox.value(),
+                factor_human=self._desired_new_ease_spinbox.value(),
+                im_human=self._recommended_new_im_spinbox.value(),
             )
             self.worker.moveToThread(self.thread)
-            self.worker.running.connect(lambda running: self.run_button.setEnabled(not running))
+            self.worker.running.connect(lambda running: self._run_button.setEnabled(not running))
             self.worker.running.connect(lambda running: self.thread.quit() if not running else None)
             self.thread.started.connect(self.worker.run)  # type:ignore
             self.thread.start()
@@ -237,10 +270,10 @@ class RefoldEaseDialog(DialogUI):
 # Entry point
 ######################################################################
 
-dialog = RefoldEaseDialog(parent=mw)
-
 
 def init():
+    mw.ajt__refold_ease_dialog = dialog = RefoldEaseDialog(parent=mw)
+
     from .ajt_common.about_menu import menu_root_entry
 
     root_menu = menu_root_entry()
@@ -251,4 +284,3 @@ def init():
     qconnect(action.triggered, dialog.show)
     # and add it to the tools menu
     root_menu.addAction(action)
-    # adjust ease factor before review, if enabled
