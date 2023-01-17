@@ -1,8 +1,9 @@
 # Copyright: Ren Tatsumoto <tatsu at autistici.org>
 # License: GNU AGPL, version 3 or later; http://www.gnu.org/licenses/agpl.html
 
+import functools
 import math
-from typing import Callable, Iterable
+from typing import Callable, Iterable, Any
 
 from anki.cards import Card
 from anki.decks import DeckConfigDict
@@ -142,11 +143,13 @@ def get_decks_info() -> list[DeckNameId]:
     ]
 
 
-def emit_running(func: Callable[["RefoldEase"], None]):
-    def wrapper(self: "RefoldEase"):
+def emit_running(func: Callable[["RefoldEase", ...], Any]):
+    @functools.wraps(func)
+    def wrapper(self: "RefoldEase", *args, **kwargs):
         self.running.emit(True)  # type: ignore
-        func(self)
+        ret = func(self, *args, **kwargs)
         self.running.emit(False)  # type: ignore
+        return ret
 
     return wrapper
 
